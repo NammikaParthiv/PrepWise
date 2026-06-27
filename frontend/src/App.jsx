@@ -12,12 +12,14 @@ import StudyPlanner from "./pages/StudyPlanner";
 import InterviewReport from "./pages/MockInterview/InterviewReport";
 import AdminHomePage from "./pages/admin/AdminHomePage";
 import InterviewDetails from "./pages/history/InterviewDetails";
+import AdminDashboard from "./pages/admin/AdminHomePage";
 import { Routes, Route } from "react-router-dom";
 function App(){
    return(
     <>
       <Routes>
-        <Route path='/' element={<UserHomePage />} />
+        {/* <Route path='/' element={<UserHomePage />} /> */}
+        <Route path="/" element={<AdminDashboard/>}/>
         <Route path='/register' element={<Register />} />
         <Route path='/login' element={<Login />} />
         <Route path='/resume_analyser' element={<ResumeAnalyser />} />
