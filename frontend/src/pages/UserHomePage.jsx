@@ -1,9 +1,9 @@
 import NavBar from "./layouts/NavBar";
 import resumeImg from "../assets/resume_analyser.png";
-import interviewImg from "../assets/interview_simulator.png";
+import interviewImg from "../assets/mock_interview.png";
 import historyImg from "../assets/history.png";
-import studyPlannerImg from "../assets/study_planning.png";
-import practiseImg from "../assets/practise.png";
+import studyPlannerImg from "../assets/study_planner.png";
+import notesImg from "../assets/notes.png";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 function HomePage() {
@@ -64,7 +64,7 @@ function HomePage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-50 gap-y-20 justify-items-center">
               <FeatureCard
-                color="from-rose-500 to-pink-500"
+                color="from-rose-400 to-rose-600"
                 heading="📑Resume Analyzer"
                 description="AI-powered feedback to improve resume quality and ATS compatibility."
                 image={resumeImg}
@@ -72,7 +72,7 @@ function HomePage() {
               />
 
               <FeatureCard
-                color="from-indigo-500 to-blue-600"
+                color="from-indigo-400 to-blue-600"
                 heading="🗣️Mock Interview"
                 description="Practice realistic interviews with AI evaluation and scoring."
                 image={interviewImg}
@@ -80,7 +80,7 @@ function HomePage() {
               />
 
               <FeatureCard
-                color="from-orange-400 to-amber-500"
+                color="from-orange-400 to-amber-600"
                 heading="🎯Study Planner"
                 description="Organize preparation goals and stay consistent every day."
                 image={studyPlannerImg}
@@ -88,15 +88,15 @@ function HomePage() {
               />
 
               <FeatureCard
-                color="from-emerald-500 to-green-600"
+                color="from-emerald-400 to-green-600"
                 heading="📝Notes"
                 description="Store important concepts, revision notes and resources."
-                image={practiseImg}
+                image={notesImg}
                 link="/notes"
               />
 
               <FeatureCard
-                color="from-violet-500 to-purple-600"
+                color="from-yellow-400 to-yellow-600"
                 heading="🕒History"
                 description="Track previous analyses and interview performance."
                 image={historyImg}

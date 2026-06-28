@@ -13,6 +13,9 @@ import InterviewReport from "./pages/MockInterview/InterviewReport";
 import AdminHomePage from "./pages/admin/AdminHomePage";
 import InterviewDetails from "./pages/history/InterviewDetails";
 import AdminDashboard from "./pages/admin/AdminHomePage";
+import Statistics from "./pages/admin/Statistics"
+import AddReferences from "./pages/admin/AddReferences"
+import Users from "./pages/admin/UsersPage"
 import { Routes, Route } from "react-router-dom";
 function App(){
    return(
@@ -33,6 +36,9 @@ function App(){
         <Route path="/interview_simulator/result" element={<InterviewReport />}/>
         <Route path="/history/resume/:id" element={<ResumeDetials/>}/>
         <Route path="/history/interview/:id" element={<InterviewDetails/>}/>
+        <Route path="/statistics" element={<Statistics />} />
+        <Route path="/add_references" element={<AddReferences/>} />
+        <Route path="/users" element={< Users/>} />
       </Routes>
     </>
    );
