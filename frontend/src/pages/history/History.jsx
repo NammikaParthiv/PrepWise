@@ -175,7 +175,7 @@ export function ResumeCard({ id, score, role, date }) {
         </div>
       </div>
      <button
-        onClick={() => navigate(`/history/resume/${id}`)}
+        onClick={() => navigate(`/u/history/resume/${id}`)}
         className="w-full bg-white/80 hover:bg-orange-500 text-orange-950 hover:text-white py-3 px-4 rounded-2xl font-bold shadow-sm hover:shadow-md transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer border border-orange-200/40"
       >
         <span className="text-sm">View Details</span>
@@ -217,7 +217,7 @@ export function InterviewCard({ id, score, role, date }) {
       </div>
 
       <button
-        onClick={() => navigate(`/history/interview/${id}`)}
+        onClick={() => navigate(`/u/history/interview/${id}`)}
         className="w-full bg-white/80 hover:bg-violet-600 text-violet-950 hover:text-white py-3 px-4 rounded-2xl font-bold shadow-sm hover:shadow-md transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer border border-violet-200/40"
       >
         <span className="text-sm">View Details</span>

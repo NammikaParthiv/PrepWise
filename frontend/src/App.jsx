@@ -1,49 +1,63 @@
-import Welcome from "./pages/Welcome"
-import UserHomePage from "./pages/UserHomePage";
+import Welcome from "./pages/Welcome";
+import UserDashboard from "./pages/UserDashboard";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import ResumeAnalyser from "./pages/ResmueAnalyser";
 import MockInterview from "./pages/MockInterview/MockInterview";
-import Practise from "./pages/Practise";
 import History from "./pages/history/History";
 import ResumeDetials from "./pages/history/ResumeDetails";
 import Profile from "./pages/Profile";
 import InterviewSimulator from "./pages/MockInterview/InterviewSimulator";
 import StudyPlanner from "./pages/StudyPlanner";
 import InterviewReport from "./pages/MockInterview/InterviewReport";
-import AdminHomePage from "./pages/admin/AdminHomePage";
 import InterviewDetails from "./pages/history/InterviewDetails";
-import AdminDashboard from "./pages/admin/AdminHomePage";
-import Statistics from "./pages/admin/Statistics"
-import AddReferences from "./pages/admin/AddReferences"
-import Users from "./pages/admin/UsersPage"
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import Statistics from "./pages/admin/Statistics";
+import AddReferences from "./pages/admin/AddReferences";
+import Users from "./pages/admin/UsersPage";
+import ProtectedRoute from "./pages/components/ProtectedRoute";
 import { Routes, Route } from "react-router-dom";
-function App(){
-   return(
+function App() {
+  return (
     <>
       <Routes>
-        <Route path="/" element={< Welcome/>} />
-        <Route path='/u' element={<UserHomePage />} />
-        <Route path="/admin" element={<AdminDashboard/>}/>
-        <Route path='/register' element={<Register />} />
-        <Route path='/login' element={<Login />} />
-        <Route path='/resume_analyser' element={<ResumeAnalyser />} />
-        <Route path='/interview_simulator' element={<InterviewSimulator />} />
-        <Route path='/interview_simulator/session' element={<MockInterview />} />
-        <Route path='/practise' element={<Practise />} />
-        <Route path='/history' element={<History />} />
-        <Route path='/study_planner' element={<StudyPlanner />} />
-        <Route path='/admin' element={<AdminHomePage />} />
-        <Route path='/profile' element={<Profile />} />
-        <Route path="/interview_simulator/result" element={<InterviewReport />}/>
-        <Route path="/history/resume/:id" element={<ResumeDetials/>}/>
-        <Route path="/history/interview/:id" element={<InterviewDetails/>}/>
-        <Route path="/statistics" element={<Statistics />} />
-        <Route path="/add_references" element={<AddReferences/>} />
-        <Route path="/users" element={< Users/>} />
+        {/* Public Routes */}
+        <Route path="/" element={<Welcome />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
+
+        {/* User Protected Routes */}
+
+        <Route element={<ProtectedRoute role="user" />}>
+          <Route path="/u" element={<UserDashboard />} />
+          <Route path="/u/resume_analyser" element={<ResumeAnalyser />} />
+          <Route path="/u/interview_simulator" element={<InterviewSimulator />} />
+          <Route
+            path="/u/interview_simulator/session"
+            element={<MockInterview />}
+          />
+          <Route path="/u/history" element={<History />} />
+          <Route path="/u/study_planner" element={<StudyPlanner />} />
+          <Route path="/u/profile" element={<Profile />} />
+          <Route
+            path="/u/interview_simulator/result"
+            element={<InterviewReport />}
+          />
+          <Route path="/u/history/resume/:id" element={<ResumeDetials />} />
+          <Route path="/u/history/interview/:id" element={<InterviewDetails />} />
+        </Route>
+
+        {/* Admin Protected Routes */}
+
+        <Route element={<ProtectedRoute role="admin" />}>
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/statistics" element={<Statistics />} />
+          <Route path="/admin/add_references" element={<AddReferences />} />
+          <Route path="/admin/users" element={<Users />} />
+        </Route>
       </Routes>
     </>
-   );
+  );
 }
 
 export default App;

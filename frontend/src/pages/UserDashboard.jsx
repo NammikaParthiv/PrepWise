@@ -67,7 +67,7 @@ function HomePage() {
                 heading="📑Resume Analyzer"
                 description="AI-powered feedback to improve resume quality and ATS compatibility."
                 image={resumeImg}
-                link="/resume_analyser"
+                link="/u/resume_analyser"
               />
 
               <FeatureCard
@@ -75,7 +75,7 @@ function HomePage() {
                 heading="🗣️Mock Interview"
                 description="Practice realistic interviews with AI evaluation and scoring."
                 image={interviewImg}
-                link="/interview_simulator"
+                link="/u/interview_simulator"
               />
 
               <FeatureCard
@@ -83,7 +83,7 @@ function HomePage() {
                 heading="🎯Study Planner"
                 description="Organize preparation goals and stay consistent every day."
                 image={studyPlannerImg}
-                link="/study_planner"
+                link="/u/study_planner"
               />
 
               <FeatureCard
@@ -91,7 +91,7 @@ function HomePage() {
                 heading="📝Notes"
                 description="Store important concepts, revision notes and resources."
                 image={notesImg}
-                link="/notes"
+                link="/u/notes"
               />
 
               <FeatureCard
@@ -99,7 +99,7 @@ function HomePage() {
                 heading="🕒History"
                 description="Track previous analyses and interview performance."
                 image={historyImg}
-                link="/history"
+                link="/u/history"
               />
             </div>
           </div>

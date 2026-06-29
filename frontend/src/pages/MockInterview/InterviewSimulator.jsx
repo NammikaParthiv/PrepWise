@@ -17,7 +17,7 @@ function InterviewSimulator() {
        const res = await axios.post("/api/interview/generate",{
         job_role:role,
        });
-       navigate("/interview_simulator/session",
+       navigate("/u/interview_simulator/session",
         {
           state:{
             interview : res.data.interview,

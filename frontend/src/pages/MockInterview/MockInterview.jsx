@@ -12,7 +12,7 @@ function MockInterview() {
   const interview = location.state?.interview;
 
   if (!interview) {
-    navigate("/interview_simulator");
+    navigate("/u/interview_simulator");
     return null;
   }
 
@@ -25,7 +25,7 @@ function MockInterview() {
         answers,
       });
 
-      navigate("/interview_simulator/result", {
+      navigate("/u/interview_simulator/result", {
         replace: true,
         state: {
           interview: res.data.interview,

@@ -157,14 +157,14 @@ function Result() {
         <div className="flex justify-center gap-8 mt-8 pb-12">
 
           <button
-            onClick={() => navigate("/history")}
+            onClick={() => navigate("/u/history")}
             className="bg-blue-600 hover:bg-blue-700 text-white px-10 py-4 rounded-xl text-xl font-semibold cursor-pointer"
           >
             📜 View History
           </button>
 
           <button
-            onClick={() => navigate("/interview_simulator")}
+            onClick={() => navigate("/u/interview_simulator")}
             className="bg-green-500 hover:bg-green-600 text-white px-10 py-4 rounded-xl text-xl font-semibold cursor-pointer"
           >
             🔄 Retake Interview
