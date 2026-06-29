@@ -23,11 +23,11 @@ function HomePage() {
         <div className="px-35 pt-12">
           <div
             className={`pt-28 pb-18 px-10 text-center border-4 rounded-4xl m-10 shadow-2xl ${
-              darkMode ? "border-green-500" : "border-blue-500 bg-white"
+              darkMode ? "border-green-500 bg-indigo-800" : "border-blue-500 bg-amber-100"
             }`}
           >
             <h1
-              className={`text-7xl font-extrabold ${
+              className={`text-8xl font-extrabold ${
                 darkMode ? "text-white" : "text-slate-900"
               }`}
             >
@@ -52,7 +52,6 @@ function HomePage() {
             </p>
           </div>
 
-          {/* Features */}
           <div className="px-10 pb-20">
             <h2
               className={`text-5xl font-bold text-center mb-16 ${
@@ -122,55 +121,6 @@ function HomePage() {
               • Analyze • Practice • Improve • Get Hired •
             </p>
           </div>
-
-          <footer
-            className={`border-t py-12 text-center ${
-              darkMode
-                ? "border-gray-700 text-gray-300"
-                : "border-gray-300 text-gray-700"
-            }`}
-          >
-            <h3 className="text-3xl font-bold">
-              Prep<span className="text-blue-400">Wise</span>
-            </h3>
-
-            <p className="mt-3">AI-Powered Interview Preparation Platform</p>
-
-            <p className="mt-2">
-              Built with React • Node.js • MongoDB • Gemini AI
-            </p>
-
-            <div className="flex justify-center gap-10 mt-6">
-              <a
-                href="https://github.com/NammikaParthiv"
-                target="_blank"
-                rel="noreferrer"
-                className="text-blue-400 hover:underline"
-              >
-                💻GitHub
-              </a>
-
-              <a
-                href="https://www.linkedin.com/in/nammika-parthiv-01478834a/"
-                target="_blank"
-                rel="noreferrer"
-                className="text-blue-400 hover:underline"
-              >
-                🔗LinkedIn
-              </a>
-
-              <a
-                href="mailto:nparthiv064.btech2023@ece.nitrr.ac.in"
-                className="text-blue-400 hover:underline"
-              >
-                📧Email
-              </a>
-            </div>
-
-            <p className="text-sm mt-6 opacity-70">
-              © 2026 PrepWise. All Rights Reserved.
-            </p>
-          </footer>
         </div>
       </div>
     </>

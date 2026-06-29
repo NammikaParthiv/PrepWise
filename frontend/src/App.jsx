@@ -1,3 +1,4 @@
+import Welcome from "./pages/Welcome"
 import UserHomePage from "./pages/UserHomePage";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
@@ -21,8 +22,9 @@ function App(){
    return(
     <>
       <Routes>
-        {/* <Route path='/' element={<UserHomePage />} /> */}
-        <Route path="/" element={<AdminDashboard/>}/>
+        <Route path="/" element={< Welcome/>} />
+        <Route path='/u' element={<UserHomePage />} />
+        <Route path="/admin" element={<AdminDashboard/>}/>
         <Route path='/register' element={<Register />} />
         <Route path='/login' element={<Login />} />
         <Route path='/resume_analyser' element={<ResumeAnalyser />} />

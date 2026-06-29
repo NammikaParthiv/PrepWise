@@ -21,11 +21,11 @@ function HomePage() {
       >
         <div
           className={`pt-30 pb-25 px-10 text-center border-4 rounded-4xl mx-40 shadow-2xl ${
-            darkMode ? "border-green-500 bg-blue-800" : "border-indigo-500 bg-white"
+            darkMode ? "border-green-500 bg-blue-800" : "border-indigo-500 bg-amber-100"
           }`}
         >
           <h1
-            className={`text-6xl font-extrabold ${
+            className={`text-7xl font-extrabold ${
               darkMode ? "text-white" : "text-slate-900"
             }`}
           >

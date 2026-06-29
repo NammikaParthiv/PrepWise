@@ -25,7 +25,7 @@ function NavBar({ darkMode, setDarkMode }) {
   return (
     <nav className="left-0 top-0 z-50 flex h-20 justify-between w-full bg-violet-600 text-white">
       <div>
-        {location.pathname === "/" ? (
+        {(location.pathname === "/" || location.pathname ==="/u" || location.pathname==="/admin") ? (
           <button
             onClick={() => setDarkMode(!darkMode)}
             className={`mt-4 ml-7 px-5 py-3 rounded-xl font-semibold shadow-lg transition-all duration-300 cursor-pointer
@@ -73,7 +73,7 @@ function NavBar({ darkMode, setDarkMode }) {
           />
 
           {open && (
-            <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg overflow-hidden">
+            <div className="absolute right-0 mt-2 z-10 w-48 bg-white rounded-lg shadow-lg overflow-hidden">
               <button
                 className="block w-full text-left px-4 py-4 text-black hover:bg-gray-200"
                 onClick={() => navigate("/profile")}

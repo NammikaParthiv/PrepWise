@@ -48,9 +48,10 @@ function InterviewSimulator() {
               <option value="">Select</option>
               <option value="frontend">Frontend Developer</option>
               <option value="backend">Backend Developer</option>
-              <option value="fullstack">Full Stack Developer</option>
-              <option value="data-science">Data Scientist</option>
-              <option value="devops">DevOps Engineer</option>
+              <option value="fullstack">MERN Full Stack Developer</option>
+              <option value="dsa">Data Sturctures and Algorithm theory</option>
+              {/* <option value="data-science">Data Scientist</option> */}
+              {/* <option value="devops">DevOps Engineer</option> */}
            </select>
            <div className="text-center bg-gray-200 p-8 border border-gray-500  rounded-xl mt-10">
             <p className="text-3xl font-bold">🔔This interview will contain:</p>

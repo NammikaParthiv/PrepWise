@@ -21,10 +21,13 @@ function Login() {
     });
 
     localStorage.setItem("token",res.data.token);
-
+    localStorage.setItem("user",JSON.stringify(res.data.user));
     console.log("Response",res.data);
-
-    navigate("/");
+    if(res.data.user.role === "admin"){
+      navigate("/admin");
+    }else{
+      navigate("/u");
+    }
   } catch (error) {
     console.log("Login Failed", error);
     console.log("Backend Response:", error.response?.data);
