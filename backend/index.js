@@ -8,6 +8,7 @@ import Resume from "./models/resume.js";
 import ResumeRoutes from "./routes/resume.js"
 import UserRoutes from "./routes/user.js";
 import InterviewRoutes from "./routes/interview.js";
+import adminRoutes from "./routes/admin.js";
 
 const app = express();
 
@@ -24,6 +25,7 @@ connect2DB();
 app.use("/api/user",UserRoutes);
 app.use("/api/resume_analyser",ResumeRoutes);
 app.use("/api/interview",InterviewRoutes);
+app.use("/api/admin",adminRoutes);
 app.use("/uploads", express.static("uploads"));
 
 app.listen(PORT, ()=>{

@@ -56,21 +56,21 @@ function HomePage() {
             heading="Statistics"
             description="Track platform usage and performance."
             image={statistics_pic}
-            link="/statistics"
+            link="/admin/statistics"
           />
           <FeatureCard
             gradient="from-green-400 to-green-600"
             heading="Manage Users"
             description="View, edit, and control user accounts."
             image={manage_users_pic}
-            link="/users"
+            link="/admin/users"
           />
           <FeatureCard
             gradient="from-blue-400 to-blue-600"
             heading="Add References"
             description="Upload and manage reference materials."
             image={add_reference_pic}
-            link="/add_references"
+            link="/admin/add_references"
           />
         </div>
 

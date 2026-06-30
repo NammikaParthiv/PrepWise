@@ -1,4 +1,4 @@
-import User from "../models/user";
+import User from "../models/user.js";
 
 export const references =async(req,res)=>{
    try {
@@ -24,9 +24,10 @@ export const getStats = async(req,res)=>{
 
 export const getUsers = async(req,res)=>{
      try {
-        const users = User.findMany({role:"user"});
+        const users = await User.find({role:"user"});
+        return res.status(200).json({msg:"Users rendered",users});
      } catch (error) {
-       console.loh(error);
+       console.log(error);
        return res.status(500).json({msg:"Server Error"});
      }
 }
