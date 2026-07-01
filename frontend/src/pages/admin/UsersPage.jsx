@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "../../utils/axios.js";
 import Navbar from "../layouts/NavBar.jsx";
 
-const ManageUsers = () => {
+const UsersPage = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -82,10 +82,10 @@ const ManageUsers = () => {
             <table className="w-full text-left">
               <thead>
                 <tr className={`${darkMode ? "bg-white/5 text-indigo-300" : "bg-indigo-100 text-indigo-700"} uppercase text-xs font-black tracking-widest`}>
-                  <th className="px-8 py-6">Member Name</th>
-                  <th className="px-8 py-6">Email Contact</th>
+                  <th className="px-8 py-6">UserName</th>
+                  <th className="px-8 py-6">Email account</th>
                   <th className="px-8 py-6">Joined Date</th>
-                  <th className="px-8 py-6 text-right">Operations</th>
+                  <th className="px-8 py-6 text-right">Remove</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200/10">
@@ -115,4 +115,4 @@ const ManageUsers = () => {
   );
 };
 
-export default ManageUsers;
+export default UsersPage;

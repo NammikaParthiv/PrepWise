@@ -1,67 +1,59 @@
 import Navbar from "../layouts/NavBar.jsx";
-
+import axios from "../../utils/axios.js";
+import { useEffect, useState } from "react";
 const AdminStatistics = () => {
-
-  const stats = {
-    resumesAnalytic: 12345,
-    interviewsTaken: 12345,
-    totalUsers: 10000,
-  };
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    resumesAnalysed: 0,
+    interviewsTaken: 0,
+  });
+  useEffect(()=>{
+    const fetchStats = async()=>{
+      try{
+        const response = await axios.get("/api/admin/statistics");
+        setStats(response.data.stats);
+      } catch (error) {
+        console.error("Error fetching stats:", error);
+      }
+    };
+    fetchStats();
+  }, []);
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col text-slate-800">
+    <div className="min-h-screen bg-linear-to-br from-slate-900 via-indigo-950 to-slate-900 flex flex-col text-slate-100">
       <Navbar />
 
       <main className="flex-1 flex flex-col max-w-7xl w-full mx-auto px-6 sm:px-8 lg:px-12 py-12 gap-12">
-        <div className="relative overflow-hidden rounded-4xl border-4 border-white bg-linear-to-br from-indigo-500 via-purple-600 to-pink-500 py-16 px-10 sm:px-16 shadow-2xl flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-          
-          <div className="relative z-10 flex flex-col items-center text-center">
-            <h1 className="text-4xl font-black tracking-tight text-white sm:text-6xl drop-shadow-sm">
-              System Statistics
-            </h1>
-            <p className="mt-5 text-xl text-purple-100 font-medium leading-relaxed">
-              Real-time platform activity metrics, throughput performance of all the users
-            </p>
-          </div>
+        <div className="relative overflow-hidden rounded-3xl border border-indigo-500/30 bg-white/10 backdrop-blur-xl py-16 px-10 sm:px-16 shadow-2xl flex flex-col items-center text-center">
+          <h1 className="text-5xl font-extrabold tracking-tight text-indigo-300 drop-shadow-lg">
+            📊 <span className="text-yellow-300">PrepWise </span>Statistics
+          </h1>
+          <p className="mt-5 text-lg text-indigo-100 font-medium leading-relaxed max-w-2xl">
+            Real-time analytics of resumes, interviews, and user activity.
+          </p>
         </div>
 
-        <div className="flex-1 grid grid-cols-1 gap-10 md:grid-cols-3 min-h-[40vh]">
-          
-          <div className="group flex flex-col justify-center items-center p-12 bg-white rounded-[2.5rem] border-2 border-slate-100 shadow-[0_10px_30px_rgba(0,0,0,0.04)] transition-all duration-500 hover:shadow-[0_30px_60px_rgba(99,102,241,0.12)]">
-            <div className="text-7xl mb-6 select-none drop-shadow-md">
-              📄
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+          {[
+            { icon: "📄", label: "Resumes Analyzed", value: stats.resumesAnalysed, color: "from-indigo-500 to-blue-600" },
+            { icon: "🎙️", label: "Interviews Taken", value: stats.interviewsTaken, color: "from-purple-500 to-pink-600" },
+            { icon: "👤", label: "Total Users", value: stats.totalUsers, color: "from-pink-500 to-red-600" },
+          ].map((stat, idx) => (
+            <div
+              key={idx}
+              className={`group flex flex-col justify-center items-center p-10 rounded-3xl border border-white/20 shadow-lg bg-linear-to-br ${stat.color} transition-all duration-500 hover:scale-105 hover:shadow-2xl`}
+            >
+              <div className="text-6xl mb-4 select-none drop-shadow-md">
+                {stat.icon}
+              </div>
+              <h3 className="text-lg font-bold text-white/80 uppercase tracking-widest">
+                {stat.label}
+              </h3>
+              <span className="mt-3 text-4xl font-black text-white tracking-tight group-hover:text-yellow-200 transition-colors duration-300">
+                {stat.value.toLocaleString()}
+              </span>
             </div>
-            <h3 className="text-lg font-bold text-slate-400 uppercase tracking-widest">
-              Resumes Analyzed
-            </h3>
-            <span className="mt-4 text-6xl font-black text-slate-900 tracking-tight group-hover:text-indigo-600 transition-colors duration-300">
-              {stats.resumesAnalytic.toLocaleString()}
-            </span>
-          </div>
-
-          <div className="group flex flex-col justify-center items-center p-12 bg-white rounded-[2.5rem] border-2 border-slate-100 shadow-[0_10px_30px_rgba(0,0,0,0.04)] transition-all duration-500 hover:shadow-[0_30px_60px_rgba(168,85,247,0.12)]">
-            <div className="text-7xl mb-6 select-none drop-shadow-md">
-              🎙️
-            </div>
-            <h3 className="text-lg font-bold text-slate-400 uppercase tracking-widest">
-              Interviews Taken
-            </h3>
-            <span className="mt-4 text-6xl font-black text-slate-900 tracking-tight group-hover:text-purple-600 transition-colors duration-300">
-              {stats.interviewsTaken.toLocaleString()}
-            </span>
-          </div>
-
-          <div className="group flex flex-col justify-center items-center p-12 bg-white rounded-[2.5rem] border-2 border-slate-100 shadow-[0_10px_30px_rgba(0,0,0,0.04)] transition-all duration-500 hover:shadow-[0_30px_60px_rgba(236,72,153,0.12)]">
-            <div className="text-7xl mb-6 select-none drop-shadow-md">
-              👤
-            </div>
-            <h3 className="text-lg font-bold text-slate-400 uppercase tracking-widest">
-              Total Users
-            </h3>
-            <span className="mt-4 text-6xl font-black text-slate-900 tracking-tight group-hover:text-pink-500 transition-colors duration-300">
-              {stats.totalUsers.toLocaleString()}
-            </span>
-          </div>
+          ))}
         </div>
       </main>
     </div>
