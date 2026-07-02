@@ -9,6 +9,7 @@ import ResumeRoutes from "./routes/resume.js"
 import UserRoutes from "./routes/user.js";
 import InterviewRoutes from "./routes/interview.js";
 import adminRoutes from "./routes/admin.js";
+import goalRoutes from "./routes/goal.js";
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.use("/api/user",UserRoutes);
 app.use("/api/resume_analyser",ResumeRoutes);
 app.use("/api/interview",InterviewRoutes);
 app.use("/api/admin",adminRoutes);
+app.use("/api/goals",goalRoutes);
 app.use("/uploads", express.static("uploads"));
 
 app.listen(PORT, ()=>{

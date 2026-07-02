@@ -1,12 +1,13 @@
 import Navbar from "./layouts/NavBar";
 import { useState, useEffect } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-
+import axios from "../utils/axios.js";
 function StudyPlanner() {
   const [goals, setGoals] = useState([]);
   const [newGoal, setNewGoal] = useState("");
 
-  useEffect(() => {
+ /*  TO STORE IN THE LOCAL STORAGE
+    useEffect(() => {
     const storedGoals = localStorage.getItem("studyGoals");
     if (storedGoals) {
       // setTimeout is for not to get syncronised with the useEffect and the useState
@@ -18,7 +19,25 @@ function StudyPlanner() {
 
   useEffect(() => {
     localStorage.setItem("studyGoals", JSON.stringify(goals));
-  }, [goals]);
+  }, [goals]); */
+
+  useEffect(()=>{
+      const fetchGoals = async()=>{
+        try{
+          const res = await axios.get("/api/goals");
+          setGoals(res.data);
+        /* sicne isEditing is not there in the backend..
+        const updatedGoals = res.data.map((goal) => ({
+        ...goal,
+        isEditing: false,
+      }));
+      setGoals(updatedGoals); */
+      }catch(error){
+      console.log(error);
+    }
+  }
+  fetchGoals();
+  },[]);
 
   const handleDragEnd = (result) => {
     if (!result.destination) return;
@@ -28,23 +47,51 @@ function StudyPlanner() {
     setGoals(updated);
   };
 
-  const addGoal = () => {
-    if (newGoal.trim() !== "") {
-      setGoals([...goals, { text: newGoal, completed: false, isEditing: false }]);
+  const addGoal = async () => {
+    if (newGoal.trim() === "")return;
+    try{
+      const res = await axios.post("/api/goals",{
+        goal_name: newGoal,
+      });
+      setGoals([...goals,{...res.data, isEditing: false}]);
       setNewGoal("");
+    }catch(error){
+      console.log(error);
     }
   };
 
-  const toggleGoal = (index) => {
-    const updated = [...goals];
-    updated[index].completed = !updated[index].completed;
-    setGoals(updated);
+  const toggleGoal = async (index) => {
+    try{
+      const goal = goals[index];
+      const res = await axios.put(`/api/goals/${goal._id}`,{
+        goal_name: goal.goal_name,
+        completed: !goal.completed,
+      });
+      const updated = [...goals];
+      updated[index]={...res.data, isEditing: goal.isEditing};
+      setGoals(updated);
+    }catch(error){
+      console.log(error);
+    }
   };
 
-  const deleteGoal = (index) => {
+  const deleteGoal = async (index) => {
+  const confirmDelete = window.confirm("Are you sure you want to delete this goal?");
+  if (!confirmDelete) return;
+
+  try {
+    const goal = goals[index];
+
+    await axios.delete(`/api/goals/${goal._id}`);
+
+    /* Not chaging frontend after chaging immediately
     const updated = goals.filter((_, i) => i !== index);
-    setGoals(updated);
-  };
+    setGoals(updated);*/
+    setGoals((prevGoals) => prevGoals.filter((_, i) => i !== index));
+  } catch (error) {
+    console.log(error);
+  }
+};
 
   const startEdit = (index) => {
     const updated = [...goals];
@@ -54,14 +101,23 @@ function StudyPlanner() {
 
   const editGoal = (index, newText) => {
     const updated = [...goals];
-    updated[index].text = newText;
+    updated[index].goal_name = newText;
     setGoals(updated);
   };
 
-  const finishEdit = (index) => {
-    const updated = [...goals];
-    updated[index].isEditing = false;
+  const finishEdit = async(index) => {
+    try{
+    const goal = goals[index];
+    const res = await axios.put(`/api/goals/${goal._id}`,{
+      goal_name: goal.goal_name,
+      completed: goal.completed,
+    });
+    const updated= [...goals];
+    updated[index]={...res.data, isEditing: false};
     setGoals(updated);
+  }catch(error){
+    console.log(error);
+  }
   };
 
   const completedCount = goals.filter((goal) => goal.completed).length;
@@ -119,8 +175,8 @@ function StudyPlanner() {
                 ) : (
                   goals.map((goal, index) => (
                     <Draggable
-                      key={index}
-                      draggableId={String(index)}
+                      key={goal._id}
+                      draggableId={goal._id}
                       index={index}
                     >
                       {(provided) => (
@@ -140,7 +196,7 @@ function StudyPlanner() {
                             {goal.isEditing ? (
                               <input
                                 type="text"
-                                value={goal.text}
+                                value={goal.goal_name}
                                 onChange={(e) => editGoal(index, e.target.value)}
                                 className="ml-4 border rounded px-4 py-3 w-md text-lg"
                               />
@@ -152,7 +208,7 @@ function StudyPlanner() {
                                     : "text-black"
                                 }`}
                               >
-                                {goal.text}
+                                {goal.goal_name}
                               </span>
                             )}
                           </div>

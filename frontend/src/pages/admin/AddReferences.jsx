@@ -1,6 +1,6 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Navbar from "../layouts/NavBar.jsx";
-
+import axios from "../../utils/axios.js";
 const AddReference = () => {
   const [activeCategory, setActiveCategory] = useState("Frontend");
   const [materials, setMaterials] = useState({
@@ -13,31 +13,55 @@ const AddReference = () => {
   const fileInputRef = useRef(null);
   const categories = ["Frontend", "Backend", "DSA"];
 
-  const handleFileUpload = (event) => {
+  useEffect(()=>{
+    const fetchReferences = async()=>{
+      try{
+        const response = await axios.get("/api/admin/references");
+        setMaterials(response.data);
+      }catch(error){
+        console.error("Error at fetching the references",error);
+      }
+    }
+    fetchReferences();
+  },[]);
+
+  const handleFileUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
-    const newFile = {
-      id: Date.now(),
-      name: file.name.split('.')[0],
-      url: URL.createObjectURL(file),
-      type: file.type === "application/pdf" ? "pdf" : "photo",
-      date: new Date().toLocaleDateString(),
-    };
+    // const newFile = {
+    //   id: Date.now(),
+    //   name: file.name.split('.')[0],
+    //   url: URL.createObjectURL(file),
+    //   type: file.type === "application/pdf" ? "pdf" : "photo",
+    //   date: new Date().toLocaleDateString(),
+    // };
 
-    setMaterials(prev => ({ 
-      ...prev, 
-      [activeCategory]: [...prev[activeCategory], newFile] 
-    }));
+    // setMaterials(prev => ({ 
+    //   ...prev, 
+    //   [activeCategory]: [...prev[activeCategory], newFile] 
+    // }));
+    const formData = new FormData();
+    formData.append("file",file);
+    formData.append("category",activeCategory);
+
+    try {
+      const res = await axios.post("/api/admin/addRefereces",formData);
+      setMaterials(res.data);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+    }
   };
 
-  const deleteFile = (e, id, fileName) => {
+  const deleteFile = async (e, id, fileName) => {
     e.stopPropagation();
     if (window.confirm(`Delete "${fileName}"?`)) {
-      setMaterials(prev => ({ 
-        ...prev, 
-        [activeCategory]: prev[activeCategory].filter(f => f.id !== id) 
-      }));
+      try{
+        const res = await axios.delete(`/api/admin/reference/${id}?category=${activeCategory}`);
+        setMaterials(res.data);
+      }catch(error){
+        console.error("Error in deleting the file:", error);
+      }
     }
   };
 
