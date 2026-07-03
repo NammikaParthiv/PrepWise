@@ -8,7 +8,7 @@ export const generateInterview = async (req, res) => {
   }
 
   try {
-    const prompt = `Generate 10 real-time company interview questions for graduating students from b.tech for the job-role:${job_role}.
+    const prompt = `Generate 1 real-time company interview questions for graduating students from b.tech for the job-role:${job_role}.
      Return only a valid json array as given in the below example:
      example:
       [
@@ -61,49 +61,38 @@ export const submitInterview = async (req, res) => {
     });
 
     let prompt = `
-You are a senior technical interviewer.
-
-Evaluate the complete interview.
-
-Return ONLY valid JSON.
-
-Interview:
-`;
+     You are a senior technical interviewer.
+     Evaluate the complete interview.
+     Return ONLY valid JSON.Interview:`;
 
     interview.questions.forEach((q, i) => {
       prompt += `
-Question ${i + 1}:
-${q.question}
-
-Answer:
-${q.answer}
-
-`;
+      Question ${i + 1}:${q.question}
+      Answer:${q.answer}`;
     });
 
-    prompt += `
-Return exactly in this format:
-
-{
-"overallScore":85,
-"strongAreas":"...",
-"weakAreas":"...",
-"suggestions":"...",
-"questions":[
-{
-"score":8,
-"merits":["point1","point2"],
-"demerits":["point1","point2"]
-}
-]
-}
-`;
+    prompt += `Return exactly in this format:
+      {
+       "overallScore":85,
+       "strongAreas":"...",
+       "weakAreas":"...",
+       "suggestions":"...",
+       "questions":[
+      {
+       "score":8,
+       "merits":["point1","point2"],
+       "demerits":["point1","point2"]
+       }
+     ]
+   }`;
 
     const result = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: prompt,
     });
-
+    if (!result || !result.text) {
+      throw new Error("AI returned an empty response.");
+    }
     const cleaned = result.text
       .replace(/```json/g, "")
       .replace(/```/g, "")
