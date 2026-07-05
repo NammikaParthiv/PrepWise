@@ -76,7 +76,7 @@ function NavBar({ darkMode, setDarkMode }) {
             <div className="absolute right-0 mt-2 z-10 w-48 bg-white rounded-lg shadow-lg overflow-hidden">
               <button
                 className="block w-full text-left px-4 py-4 text-black hover:bg-gray-200"
-                onClick={() => navigate("/profile")}
+                onClick={() => navigate("/u/profile")}
               >
                 Profile 👤
               </button>

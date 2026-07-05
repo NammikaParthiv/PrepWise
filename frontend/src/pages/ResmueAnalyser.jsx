@@ -102,7 +102,7 @@ function ResumeAnalyser() {
             <button
               onClick={handleSubmit}
               disabled={loading}
-              className="w-full sm:w-auto py-4 px-10 text-xl font-bold rounded-full text-white bg-linear-to-r from-orange-500 via-orange-600 to-red-500 hover:scale-[1.02] hover:shadow-xl active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed"
+              className="w-full sm:w-auto py-4 px-10 text-xl font-bold rounded-full text-white bg-linear-to-r from-orange-500 via-orange-600 to-red-500 hover:scale-[1.02] hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed"
             >
               {loading ? "Analyzing Profile..." : "Analyze Now"}
             </button>

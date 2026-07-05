@@ -141,10 +141,23 @@ export const interviewHistory = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
       msg: "Server Error",
     });
   }
 };
-export const getInterview = async (req, res) => {};
+export const getInterview = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const interview = await Interview.findById(id);
+    if (!interview) {
+      return res.status(404).json({ msg: "Interview not found" });
+    }
+    if (interview.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ msg: "Unauthorized" });
+    }
+    res.status(200).json({ interview });
+  } catch (error) {
+    res.status(500).json({ msg: "Server Error" });
+  }
+};

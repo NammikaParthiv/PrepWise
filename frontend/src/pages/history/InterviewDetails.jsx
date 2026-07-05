@@ -32,24 +32,27 @@ function InterviewDetails() {
   useEffect(() => {
     const fetchInterviewData = async () => {
       try {
-        const res = await axios.get("/api/interview/history");
-        const match = res.data?.interviews?.find((item) => item._id === id);
-
-        if (match) {
-          setInterview(match);
-        } else {
-          const fallback = await axios.get(`/api/interview/${id}`);
-          setInterview(fallback.data.interview);
+        setLoading(true);
+        // Force a direct call to the specific ID endpoint
+        const res = await axios.get(`/api/interview/${id}`);
+        
+        // Log the response to see exactly what the server returned
+        console.log("API Response:", res.data);
+        
+        if (res.data.interview) {
+          setInterview(res.data.interview);
         }
       } catch (error) {
-        console.log(error);
-        alert("Unable to fetch session logs");
+        console.error("Fetch Error:", error);
+        alert("Failed to load interview details.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchInterviewData();
+    if (id) {
+      fetchInterviewData();
+    }
   }, [id]);
 
   if (loading) {

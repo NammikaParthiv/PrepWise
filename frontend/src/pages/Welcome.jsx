@@ -19,13 +19,13 @@ const WelcomePage = () => {
         <div className="flex flex-col sm:flex-row justify-center gap-6">
           <button 
             onClick={() => navigate("/register")}
-            className="px-12 py-5 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xl rounded-3xl transition-all hover:scale-105"
+            className="px-12 py-5 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xl rounded-3xl transition-all hover:scale-105 cursor:pointer"
           >
             Get Started
           </button>
           <button 
             onClick={() => navigate("/login")}
-            className="px-12 py-5 bg-slate-800 hover:bg-slate-700 text-white font-black text-xl rounded-3xl transition-all border border-slate-700"
+            className="px-12 py-5 bg-slate-800 hover:bg-slate-700 text-white font-black text-xl rounded-3xl transition-all border border-slate-700 cursor-pointer"
           >
             Login
           </button>

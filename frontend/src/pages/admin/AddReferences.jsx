@@ -46,7 +46,7 @@ const AddReference = () => {
     formData.append("category",activeCategory);
 
     try {
-      const res = await axios.post("/api/admin/addRefereces",formData);
+      const res = await axios.post("/api/admin/add_references",formData);
       setMaterials(res.data);
     } catch (error) {
       console.error("Error uploading file:", error);
@@ -66,7 +66,7 @@ const AddReference = () => {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 via-indigo-50 to-purple-50 text-slate-900 pb-20">
+    <div className="min-h-screen bg-linear-to-br from-amber-300 via-amber-100 to-amber-200 text-slate-900 pb-20">
       <Navbar />
       
       <main className="max-w-7xl mx-auto px-6 py-12">
@@ -82,7 +82,7 @@ const AddReference = () => {
 
         <div className="flex justify-between items-center mb-12">
           <h2 className="text-4xl font-black">{activeCategory} Library</h2>
-          <button onClick={() => fileInputRef.current.click()} className="px-8 py-4 bg-slate-900 text-white font-bold rounded-2xl hover:bg-indigo-600 transition shadow-lg">+ Upload File</button>
+          <button onClick={() => fileInputRef.current.click()} className="px-8 py-4 bg-slate-900 text-white font-bold rounded-2xl hover:bg-indigo-600 transition shadow-lg cursor-pointer">+ Upload File</button>
           <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept=".pdf,image/*" />
         </div>
 
