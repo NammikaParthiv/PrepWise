@@ -1,19 +1,19 @@
 import Welcome from "./pages/Welcome";
-import UserDashboard from "./pages/UserDashboard";
+import UserDashboard from "./pages/user/UserDashboard";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
-import ResumeAnalyser from "./pages/ResmueAnalyser";
+import ResumeAnalyser from "./pages/user/ResmueAnalyser";
 import MockInterview from "./pages/MockInterview/MockInterview";
 import History from "./pages/history/History";
 import ResumeDetials from "./pages/history/ResumeDetails";
 import Profile from "./pages/Profile";
 import InterviewSimulator from "./pages/MockInterview/InterviewSimulator";
-import StudyPlanner from "./pages/StudyPlanner";
+import StudyPlanner from "./pages/user/StudyPlanner";
 import InterviewReport from "./pages/MockInterview/InterviewReport";
 import InterviewDetails from "./pages/history/InterviewDetails";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import Statistics from "./pages/admin/Statistics";
-import AddReferences from "./pages/admin/AddReferences";
+import References from "./pages/References";
 import Users from "./pages/admin/UsersPage";
 import ProtectedRoute from "./pages/components/ProtectedRoute";
 import { Routes, Route } from "react-router-dom";
@@ -36,6 +36,7 @@ function App() {
             path="/u/interview_simulator/session"
             element={<MockInterview />}
           />
+          <Route path="/u/references" element={<References />} />
           <Route path="/u/history" element={<History />} />
           <Route path="/u/study_planner" element={<StudyPlanner />} />
           <Route path="/u/profile" element={<Profile />} />
@@ -52,7 +53,7 @@ function App() {
         <Route element={<ProtectedRoute role="admin" />}>
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/statistics" element={<Statistics />} />
-          <Route path="/admin/add_references" element={<AddReferences />} />
+          <Route path="/admin/references" element={<References />} />
           <Route path="/admin/users" element={<Users />} />
         </Route>
       </Routes>

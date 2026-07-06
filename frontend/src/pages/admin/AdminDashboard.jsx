@@ -70,7 +70,7 @@ function HomePage() {
             heading="Add References"
             description="Upload and manage reference materials."
             image={add_reference_pic}
-            link="/admin/add_references"
+            link="/admin/references"
           />
         </div>
 

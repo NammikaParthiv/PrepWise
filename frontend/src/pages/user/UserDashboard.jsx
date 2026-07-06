@@ -1,9 +1,9 @@
-import NavBar from "./layouts/NavBar";
-import resumeImg from "../assets/resume_analyser.png";
-import interviewImg from "../assets/mock_interview.png";
-import historyImg from "../assets/history.png";
-import studyPlannerImg from "../assets/study_planner.png";
-import notesImg from "../assets/notes.png";
+import NavBar from "../layouts/NavBar";
+import resumeImg from "../../assets/resume_analyser.png";
+import interviewImg from "../../assets/mock_interview.png";
+import historyImg from "../../assets/history.png";
+import studyPlannerImg from "../../assets/study_planner.png";
+import notesImg from "../../assets/notes.png";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 function HomePage() {
@@ -91,7 +91,7 @@ function HomePage() {
                 heading="📝Notes"
                 description="Store important concepts, revision notes and resources."
                 image={notesImg}
-                link="/u/notes"
+                link="/u/references"
               />
 
               <FeatureCard

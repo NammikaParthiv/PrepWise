@@ -1,7 +1,7 @@
-import Navbar from "./layouts/NavBar";
+import Navbar from "../layouts/NavBar.jsx";
 import { useState, useEffect } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-import axios from "../utils/axios.js";
+import axios from "../../utils/axios.js";
 function StudyPlanner() {
   const [goals, setGoals] = useState([]);
   const [newGoal, setNewGoal] = useState("");

@@ -1,5 +1,5 @@
-import Navbar from "./layouts/NavBar";
-import axios from "../utils/axios.js";
+import Navbar from "../layouts/NavBar.jsx";
+import axios from "../../utils/axios.js";
 import { useState } from "react";
 
 function ResumeAnalyser() {

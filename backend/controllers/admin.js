@@ -3,7 +3,7 @@ import Resume from "../models/resume.js";
 import Interview from "../models/interview.js";
 import Reference from "../models/reference.js";
 
-export const references = async (req, res) => {
+export const getReferences = async (req, res) => {
   try {
     const refs = await Reference.find();
     const grouped = { Frontend: [], Backend: [], DSA: [] };
@@ -25,13 +25,13 @@ export const addReferences = async(req, res) => {
     const { category } = req.body;
     const file = req.file;
 
-    if (!file || !category) {
-      return res.status(400).json({ msg: "File and category required" });
+    if (!file) {
+      return res.status(400).json({ msg: "File is required" });
     }
 
     const newRef = new Reference({
       name: file.originalname.split(".")[0],
-      photo_url: `/uploads/${file.filename}`,
+      photo_url: `/uploads/${file.filename}`, 
       type: file.mimetype === "application/pdf" ? "pdf" : "photo",
       date: new Date().toLocaleDateString(),
       category
