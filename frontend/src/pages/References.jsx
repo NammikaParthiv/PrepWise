@@ -1,19 +1,23 @@
 import { useState, useRef, useEffect } from "react";
 import Navbar from "./layouts/NavBar.jsx";
 import axios from "../utils/axios.js";
+import { useAuth } from "../context/AuthContext.jsx";
 import { FaPlus, FaTrash, FaFilePdf, FaImage, FaTimes } from "react-icons/fa";
 
 const References = () => {
+  const { user } = useAuth();
+  
+  console.log("Logged-in user object:", user);
+
+  const isAdmin = user?.role === "admin";
   const [activeCategory, setActiveCategory] = useState("Frontend");
   const [materials, setMaterials] = useState({ Frontend: [], Backend: [], DSA: [] });
   const [preview, setPreview] = useState(null);
   const fileInputRef = useRef(null);
   const categories = ["Frontend", "Backend", "DSA"];
-  
-  // TODO: Replace this with your actual authentication state logic
-  const isAdmin = true; 
 
   useEffect(() => {
+    
     const fetchReferences = async () => {
       try {
         const response = await axios.get("/api/admin/references");
@@ -67,7 +71,7 @@ const References = () => {
               onClick={() => fileInputRef.current.click()} 
               className="flex items-center gap-3 px-8 py-4 bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200 cursor-pointer"
             >
-              <FaPlus /> Upload New Resource
+              <FaPlus /> Add New Resource
             </button>
           )}
           <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept=".pdf,image/*" />

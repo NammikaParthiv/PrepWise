@@ -22,12 +22,12 @@ app.use(cors({
 
 connect2DB();
 
-
 app.use("/api/user",UserRoutes);
 app.use("/api/resume_analyser",ResumeRoutes);
 app.use("/api/interview",InterviewRoutes);
 app.use("/api/admin",adminRoutes);
 app.use("/api/goals",goalRoutes);
+app.use("/api/references",adminRoutes);
 app.use("/uploads", express.static("uploads"));
 
 app.listen(PORT, ()=>{
