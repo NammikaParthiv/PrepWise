@@ -10,6 +10,13 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const checkAuth = async () => {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        setUser(null);
+        setLoading(false);
+        return;
+      }
       try {
         const res = await axios.get("/api/user/profile");
         setUser(res.data);

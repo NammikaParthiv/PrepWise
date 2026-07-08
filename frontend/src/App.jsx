@@ -16,13 +16,28 @@ import Statistics from "./pages/admin/Statistics";
 import References from "./pages/References";
 import Users from "./pages/admin/UsersPage";
 import ProtectedRoute from "./pages/components/ProtectedRoute";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useAuth } from "./context/AuthContext";
 function App() {
+  const { user } = useAuth();
   return (
     <>
       <Routes>
         {/* Public Routes */}
-        <Route path="/" element={<Welcome />} />
+        <Route
+          path="/"
+          element={
+            user ? (
+              user.role === "admin" ? (
+                <Navigate to="/admin" />
+              ) : (
+                <Navigate to="/u" />
+              )
+            ) : (
+              <Welcome />
+            )
+          }
+        />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
 
@@ -31,7 +46,10 @@ function App() {
         <Route element={<ProtectedRoute role="user" />}>
           <Route path="/u" element={<UserDashboard />} />
           <Route path="/u/resume_analyser" element={<ResumeAnalyser />} />
-          <Route path="/u/interview_simulator" element={<InterviewSimulator />} />
+          <Route
+            path="/u/interview_simulator"
+            element={<InterviewSimulator />}
+          />
           <Route
             path="/u/interview_simulator/session"
             element={<MockInterview />}
@@ -45,7 +63,10 @@ function App() {
             element={<InterviewReport />}
           />
           <Route path="/u/history/resume/:id" element={<ResumeDetials />} />
-          <Route path="/u/history/interview/:id" element={<InterviewDetails />} />
+          <Route
+            path="/u/history/interview/:id"
+            element={<InterviewDetails />}
+          />
         </Route>
 
         {/* Admin Protected Routes */}

@@ -4,12 +4,12 @@ import cors from "cors";
 import path from "path";
 const PORT = process.env.PORT || 2222;
 import connect2DB  from "./connect2DB.js";
-import Resume from "./models/resume.js";
-import ResumeRoutes from "./routes/resume.js"
-import UserRoutes from "./routes/user.js";
-import InterviewRoutes from "./routes/interview.js";
+import resumeRoutes from "./routes/resume.js"
+import userRoutes from "./routes/user.js";
+import interviewRoutes from "./routes/interview.js";
 import adminRoutes from "./routes/admin.js";
 import goalRoutes from "./routes/goal.js";
+import referenceRoutes from "./routes/reference.js";
 
 const app = express();
 
@@ -22,14 +22,14 @@ app.use(cors({
 
 connect2DB();
 
-app.use("/api/user",UserRoutes);
-app.use("/api/resume_analyser",ResumeRoutes);
-app.use("/api/interview",InterviewRoutes);
+app.use("/api/user",userRoutes);
+app.use("/api/resume_analyser",resumeRoutes);
+app.use("/api/interview",interviewRoutes);
 app.use("/api/admin",adminRoutes);
 app.use("/api/goals",goalRoutes);
-app.use("/api/references",adminRoutes);
+app.use("/api/references",referenceRoutes);
 app.use("/uploads", express.static("uploads"));
 
 app.listen(PORT, ()=>{
     console.log(`Server Started at PORT: ${PORT}`);
-})
+});

@@ -6,8 +6,6 @@ import { FaPlus, FaTrash, FaFilePdf, FaImage, FaTimes } from "react-icons/fa";
 
 const References = () => {
   const { user } = useAuth();
-  
-  console.log("Logged-in user object:", user);
 
   const isAdmin = user?.role === "admin";
   const [activeCategory, setActiveCategory] = useState("Frontend");
@@ -20,7 +18,7 @@ const References = () => {
     
     const fetchReferences = async () => {
       try {
-        const response = await axios.get("/api/admin/references");
+        const response = await axios.get("/api/references");
         setMaterials(response.data);
       } catch (error) {
         console.error("Error at fetching the references", error);
@@ -37,7 +35,11 @@ const References = () => {
     formData.append("category", activeCategory);
 
     try {
-      const res = await axios.post("/api/admin/add_references", formData);
+      const res = await axios.post("/api/references/add_reference", formData,{
+        headers:{
+          "Content-Type": "multipart/form-data",
+        },
+      });
       setMaterials(res.data);
     } catch (error) {
       console.error("Error uploading file:", error);
@@ -48,7 +50,7 @@ const References = () => {
     e.stopPropagation();
     if (window.confirm(`Delete "${fileName}"?`)) {
       try {
-        const res = await axios.delete(`/api/admin/reference/${id}?category=${activeCategory}`);
+        const res = await axios.delete(`/api/references/${id}?category=${activeCategory}`);
         setMaterials(res.data);
       } catch (error) {
         console.error("Error in deleting the file:", error);

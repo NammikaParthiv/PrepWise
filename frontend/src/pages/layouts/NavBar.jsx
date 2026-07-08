@@ -84,8 +84,11 @@ function NavBar({ darkMode, setDarkMode }) {
               <button
                 className="block w-full text-left px-4 py-4 text-black hover:bg-gray-200"
                 onClick={() => {
-                  localStorage.removeItem("token");
-                  navigate("/login");
+                  const confirmed = window.confirm("Are you sure you want to logout?")
+                  if(confirmed){
+                    localStorage.removeItem("token");
+                    navigate("/login");
+                  }
                 }}
               >
                 Sign Out ➜
