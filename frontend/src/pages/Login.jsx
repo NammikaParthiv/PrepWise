@@ -1,19 +1,28 @@
 import loginBG from "../assets/login.png";
 import axios from "../utils/axios.js";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {useNavigate} from "react-router-dom";
+import { useAuth} from "../context/AuthContext.jsx";
+
 function Login() {
+
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [email,setEmail] = useState("");
   const [password,setPassword] = useState("");
+  useEffect(()=>{
+     if(user){
+      if(user.role === "admin"){
+        navigate("/admin",{replace: true});
+      }else{
+        navigate("/u",{replace: true});
+      }
+     }
+  },[user, navigate]);
+
   const submitHandle = async(e)=>{
   e.preventDefault();
-
-  console.log({
-    email,
-    password,
-  });
-
+  
   try {
     const res = await axios.post("/api/user/login",{
       email,
@@ -24,9 +33,9 @@ function Login() {
     localStorage.setItem("user",JSON.stringify(res.data.user));
     console.log("Response",res.data);
     if(res.data.user.role === "admin"){
-      navigate("/admin");
+      navigate("/admin",{replace: true});
     }else{
-      navigate("/u");
+      navigate("/u",{replace: true});
     }
   } catch (error) {
     console.log("Login Failed", error);

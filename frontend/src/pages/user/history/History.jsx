@@ -1,6 +1,6 @@
-import Navbar from "../layouts/NavBar.jsx";
+import Navbar from "../../layouts/NavBar.jsx";
 import { useState, useEffect } from "react";
-import axios from "../../utils/axios.js";
+import axios from "../../../utils/axios.js";
 import { useNavigate } from "react-router-dom";
 
 const parseDateTime = (dateString) => {

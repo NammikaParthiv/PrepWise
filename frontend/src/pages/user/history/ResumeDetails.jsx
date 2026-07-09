@@ -1,12 +1,11 @@
-import Navbar from "../layouts/NavBar";
+import Navbar from "../../layouts/NavBar";
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import axios from "../../utils/axios";
+import axios from "../../../utils/axios";
 import {
   FaCheckCircle,
   FaTimesCircle,
   FaLightbulb,
-  FaArrowLeft,
   FaFileAlt,
 } from "react-icons/fa";
 
@@ -88,21 +87,11 @@ function ResumeDetails() {
       <Navbar />
 
       <div className="max-w-5xl mx-auto pt-28 px-6">
-        <div className="flex justify-between items-center mb-8">
-          <button
-            onClick={() => navigate("/history")}
-            className="flex items-center gap-2 bg-white text-gray-800 font-bold px-5 py-3 rounded-2xl shadow-xs border border-gray-200/80 hover:bg-gray-50 transition-all duration-200 cursor-pointer"
-          >
-            <FaArrowLeft className="text-sm" />
-            <span>Back to History</span>
-          </button>
-
-          <span className="text-xs font-extrabold uppercase tracking-widest text-orange-700 bg-orange-200/60 px-4 py-2 rounded-xl border border-orange-300/40">
+          <span className="text-l font-extrabold uppercase tracking-widest text-orange-700 bg-orange-200/60 px-4 py-2 rounded-xl border border-orange-300/40">
             Resume Report
           </span>
-        </div>
 
-        <div className="bg-linear-to-br from-orange-300 via-orange-100 to-orange-300 rounded-4xl p-8 shadow-md border border-orange-200/60 mb-8">
+        <div className="bg-linear-to-br from-orange-300 via-orange-100 to-orange-300 rounded-4xl p-8 shadow-md border border-orange-200/60 mb-8 mt-9">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-orange-950">

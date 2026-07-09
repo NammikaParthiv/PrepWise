@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import axios from "../../utils/axios.js";
-import NavBar from "../layouts/NavBar.jsx";
+import axios from "../../../utils/axios.js";
+import NavBar from "../../layouts/NavBar.jsx";
 
 function MockInterview() {
   const navigate = useNavigate();

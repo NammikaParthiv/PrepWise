@@ -1,13 +1,8 @@
-import Navbar from "../layouts/NavBar";
+import Navbar from "../../layouts/NavBar.jsx";
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import axios from "../../utils/axios";
-import {
-  FaArrowLeft,
-  FaCommentDots,
-  FaBriefcase,
-  FaRegCalendarAlt,
-} from "react-icons/fa";
+import axios from "../../../utils/axios";
+import { FaCommentDots, FaBriefcase, FaRegCalendarAlt } from "react-icons/fa";
 
 const formatFullDateTime = (dateString) => {
   if (!dateString) return "Date unavailable";
@@ -33,12 +28,9 @@ function InterviewDetails() {
     const fetchInterviewData = async () => {
       try {
         setLoading(true);
-        // Force a direct call to the specific ID endpoint
         const res = await axios.get(`/api/interview/${id}`);
-        
-        // Log the response to see exactly what the server returned
         console.log("API Response:", res.data);
-        
+
         if (res.data.interview) {
           setInterview(res.data.interview);
         }
@@ -92,21 +84,11 @@ function InterviewDetails() {
       <Navbar />
 
       <div className="max-w-5xl mx-auto pt-28 px-6">
-        <div className="flex justify-between items-center mb-8">
-          <button
-            onClick={() => navigate("/history")}
-            className="flex items-center gap-2 bg-white text-gray-800 font-bold px-5 py-3 rounded-2xl shadow-xs border border-gray-200/80 hover:bg-gray-50 transition-all duration-200 cursor-pointer"
-          >
-            <FaArrowLeft className="text-sm" />
-            <span>Back to History</span>
-          </button>
+        <span className="text-l font-extrabold uppercase tracking-widest text-violet-700 bg-violet-200/60 px-4 py-2 rounded-xl border border-violet-300/40">
+          Interview Review
+        </span>
 
-          <span className="text-xs font-extrabold uppercase tracking-widest text-violet-700 bg-violet-200/60 px-4 py-2 rounded-xl border border-violet-300/40">
-            Interview Review
-          </span>
-        </div>
-
-        <div className="bg-linear-to-br from-violet-300 via-violet-100 to-violet-300 rounded-4xl p-8 shadow-md border border-violet-200/60 mb-8">
+        <div className="bg-linear-to-br from-violet-300 via-violet-100 to-violet-300 rounded-4xl p-8 shadow-md border border-violet-200/60 my-8">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-violet-950">
@@ -146,11 +128,34 @@ function InterviewDetails() {
             </h3>
           </div>
 
-          <p className="text-gray-700 leading-relaxed whitespace-pre-line text-base font-medium bg-gray-50/50 p-6 rounded-2xl border border-gray-100">
-            {interview.feedback ||
-              interview.remarks ||
-              "No specific feedback breakdown captured for this entry session log."}
-          </p>
+          <div className="space-y-5">
+            <div className="bg-gray-50/50 p-6 rounded-2xl border border-gray-100">
+              <h4 className="text-lg font-bold text-violet-700 mb-2">
+                Strong Areas
+              </h4>
+              <p className="text-gray-700 whitespace-pre-line">
+                {interview.strongAreas || "No strong areas recorded."}
+              </p>
+            </div>
+
+            <div className="bg-gray-50/50 p-6 rounded-2xl border border-gray-100">
+              <h4 className="text-lg font-bold text-red-500 mb-2">
+                Weak Areas
+              </h4>
+              <p className="text-gray-700 whitespace-pre-line">
+                {interview.weakAreas || "No weak areas recorded."}
+              </p>
+            </div>
+
+            <div className="bg-gray-50/50 p-6 rounded-2xl border border-gray-100">
+              <h4 className="text-lg font-bold text-amber-500 mb-2">
+                Final Suggestions
+              </h4>
+              <p className="text-gray-700 whitespace-pre-line">
+                {interview.finalSuggestions || "No suggestions recorded."}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

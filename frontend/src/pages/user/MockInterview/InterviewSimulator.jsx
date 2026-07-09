@@ -1,7 +1,7 @@
-import Navbar from "../layouts/NavBar";
+import Navbar from "../../layouts/NavBar.jsx";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "../../utils/axios.js";
+import axios from "../../../utils/axios.js";
 
 function InterviewSimulator() {
   const navigate = useNavigate();
@@ -49,7 +49,7 @@ function InterviewSimulator() {
               <option value="frontend">Frontend Developer</option>
               <option value="backend">Backend Developer</option>
               <option value="fullstack">MERN Full Stack Developer</option>
-              <option value="dsa">Data Sturctures and Algorithm theory</option>
+              <option value="data_analyst">Data Analyst</option>
               {/* <option value="data-science">Data Scientist</option> */}
               {/* <option value="devops">DevOps Engineer</option> */}
            </select>
@@ -67,7 +67,7 @@ function InterviewSimulator() {
            disabled={loading}
            className={`self-center text-white px-8 py-4 text-xl rounded-lg mt-5
             ${
-              loading ? "bg-green-500 cursor-not-allowed"
+              loading ? "bg-green-600 cursor-not-allowed transform scale-105"
               : "bg-green-500 hover:bg-green-600 cursor-pointer"
             }
             `}
