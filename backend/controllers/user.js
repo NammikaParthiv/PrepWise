@@ -1,6 +1,8 @@
 import User from "../models/user.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import fs from "fs";
+import path from "path";
 
 export const loginUser = async(req,res)=>{
     const {email,password} = req.body;
@@ -110,5 +112,34 @@ export const updateProfile = async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({ msg: "Server Error" });
+  }
+};
+
+export const deleteProfilePhoto = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+
+    if (user.profilePic_URL) {
+      const filePath = path.join(process.cwd(), user.profilePic_URL.replace(/^\/+/, ""));
+      
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+
+      user.profilePic_URL = "";
+      await user.save();
+    }
+
+    return res.status(200).json({
+      msg: "Profile photo removed successfully",
+      user,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ msg: "Server Error" });
   }
 };

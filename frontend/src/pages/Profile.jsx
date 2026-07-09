@@ -37,7 +37,7 @@ function Profile() {
     setIsEditing(true);
   };
 
-  // Handles client-side file selection
+  // Handles user-side file selection
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -61,7 +61,6 @@ function Profile() {
           headers: { "Content-Type": "multipart/form-data" },
         });
       } else {
-        // Pure text update payload
         res = await axios.put("/api/user/profile", {
           name: name,
           college: college,
@@ -75,6 +74,23 @@ function Profile() {
       setPhotoFile(null);
     } catch (err) {
       console.log("Error saving changes:", err);
+    }
+  };
+  const handleDeletePhoto = async () => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to remove your profile photo?",
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      const res = await axios.delete("/api/user/profile/photo");
+      const updatedUser = res.data.user || res.data;
+      setUser(updatedUser);
+      setPhotoFile(null);
+      setPhotoPreview("/user.png");
+    } catch (err) {
+      console.log("Error deleting photo:", err);
     }
   };
 
@@ -119,16 +135,28 @@ function Profile() {
               alt="Profile"
               className="w-52 h-52 rounded-full border-4 border-violet-500 object-cover shadow-xl"
             />
+
             {isEditing && (
-              <label className="mt-6 px-6 py-3 rounded-xl bg-violet-500 hover:bg-violet-600 text-white font-semibold cursor-pointer transition shadow-md">
-                📷 Change Photo
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handlePhotoChange}
-                />
-              </label>
+              <div className="flex flex-col items-center gap-3 mt-6">
+                <label className="px-6 py-3 rounded-xl bg-violet-500 hover:bg-violet-600 text-white font-semibold cursor-pointer transition shadow-md">
+                  📷 Change Photo
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handlePhotoChange}
+                  />
+                </label>
+
+                {user?.profilePic_URL && (
+                  <button
+                    onClick={handleDeletePhoto}
+                    className="px-6 py-3 rounded-xl bg-red-500 hover:bg-red-600 text-white font-semibold transition shadow-md cursor-pointer"
+                  >
+                    🗑 Remove Photo
+                  </button>
+                )}
+              </div>
             )}
           </div>
 
