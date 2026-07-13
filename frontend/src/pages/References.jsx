@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import Navbar from "./layouts/NavBar.jsx";
 import axios from "../utils/axios.js";
-import { useAuth } from "../context/AuthContext.jsx";
+import { useAuth } from "../context/AuthProvider.jsx";
 import { FaPlus, FaTrash, FaFilePdf, FaImage, FaTimes } from "react-icons/fa";
 
 const References = () => {
@@ -60,8 +59,7 @@ const References = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 pb-20">
-      <Navbar />
-      
+
       <main className="max-w-7xl mx-auto px-6 py-12">
         <header className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6">
           <div>

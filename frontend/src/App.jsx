@@ -2,6 +2,7 @@ import Welcome from "./pages/Welcome";
 import UserDashboard from "./pages/user/UserDashboard";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
+import NavBar from "./pages/layouts/NavBar";
 import ResumeAnalyser from "./pages/user/ResmueAnalyser";
 import MockInterview from "./pages/user/MockInterview/MockInterview";
 import History from "./pages/user/history/History";
@@ -17,11 +18,12 @@ import References from "./pages/References";
 import Users from "./pages/admin/UsersPage";
 import ProtectedRoute from "./pages/components/ProtectedRoute";
 import { Routes, Route, Navigate } from "react-router-dom";
-import { useAuth } from "./context/AuthContext";
+import { useAuth } from "./context/AuthProvider";
 function App() {
   const { user } = useAuth();
   return (
-    <>
+      <div className="min-h-screen bg-white dark:bg-slate-900 text-black dark:text-white transition-colors duration-300">
+        <NavBar />
       <Routes>
         {/* Public Routes */}
         <Route
@@ -78,7 +80,7 @@ function App() {
           <Route path="/admin/users" element={<Users />} />
         </Route>
       </Routes>
-    </>
+      </div>
   );
 }
 

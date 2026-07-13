@@ -2,7 +2,7 @@ import loginBG from "../assets/login.png";
 import axios from "../utils/axios.js";
 import { useState, useEffect } from "react";
 import {useNavigate} from "react-router-dom";
-import { useAuth} from "../context/AuthContext.jsx";
+import { useAuth} from "../context/AuthProvider.jsx";
 
 function Login() {
 
