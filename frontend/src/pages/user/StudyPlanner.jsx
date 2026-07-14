@@ -1,12 +1,12 @@
-import Navbar from "../layouts/NavBar.jsx";
 import { useState, useEffect } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import axios from "../../utils/axios.js";
+
 function StudyPlanner() {
   const [goals, setGoals] = useState([]);
   const [newGoal, setNewGoal] = useState("");
 
- /*  TO STORE IN THE LOCAL STORAGE
+  /*  TO STORE IN THE LOCAL STORAGE
     useEffect(() => {
     const storedGoals = localStorage.getItem("studyGoals");
     if (storedGoals) {
@@ -21,23 +21,23 @@ function StudyPlanner() {
     localStorage.setItem("studyGoals", JSON.stringify(goals));
   }, [goals]); */
 
-  useEffect(()=>{
-      const fetchGoals = async()=>{
-        try{
-          const res = await axios.get("/api/goals");
-          setGoals(res.data);
+  useEffect(() => {
+    const fetchGoals = async () => {
+      try {
+        const res = await axios.get("/api/goals");
+        setGoals(res.data);
         /* sicne isEditing is not there in the backend..
         const updatedGoals = res.data.map((goal) => ({
-        ...goal,
-        isEditing: false,
-      }));
-      setGoals(updatedGoals); */
-      }catch(error){
-      console.log(error);
-    }
-  }
-  fetchGoals();
-  },[]);
+          ...goal,
+          isEditing: false,
+        }));
+        setGoals(updatedGoals); */
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchGoals();
+  }, []);
 
   const handleDragEnd = (result) => {
     if (!result.destination) return;
@@ -48,50 +48,46 @@ function StudyPlanner() {
   };
 
   const addGoal = async () => {
-    if (newGoal.trim() === "")return;
-    try{
-      const res = await axios.post("/api/goals",{
+    if (newGoal.trim() === "") return;
+    try {
+      const res = await axios.post("/api/goals", {
         goal_name: newGoal,
       });
-      setGoals([...goals,{...res.data, isEditing: false}]);
+      setGoals([...goals, { ...res.data, isEditing: false }]);
       setNewGoal("");
-    }catch(error){
+    } catch (error) {
       console.log(error);
     }
   };
 
   const toggleGoal = async (index) => {
-    try{
+    try {
       const goal = goals[index];
-      const res = await axios.put(`/api/goals/${goal._id}`,{
+      const res = await axios.put(`/api/goals/${goal._id}`, {
         goal_name: goal.goal_name,
         completed: !goal.completed,
       });
       const updated = [...goals];
-      updated[index]={...res.data, isEditing: goal.isEditing};
+      updated[index] = { ...res.data, isEditing: goal.isEditing };
       setGoals(updated);
-    }catch(error){
+    } catch (error) {
       console.log(error);
     }
   };
 
   const deleteGoal = async (index) => {
-  const confirmDelete = window.confirm("Are you sure you want to delete this goal?");
-  if (!confirmDelete) return;
+    const confirmDelete = window.confirm("Are you sure you want to delete this goal?");
+    if (!confirmDelete) return;
 
-  try {
-    const goal = goals[index];
-
-    await axios.delete(`/api/goals/${goal._id}`);
-
-    /* Not chaging frontend after chaging immediately
-    const updated = goals.filter((_, i) => i !== index);
-    setGoals(updated);*/
-    setGoals((prevGoals) => prevGoals.filter((_, i) => i !== index));
-  } catch (error) {
-    console.log(error);
-  }
-};
+    try {
+      const goal = goals[index];
+      await axios.delete(`/api/goals/${goal._id}`);
+      // FIX: update frontend immediately
+      setGoals((prevGoals) => prevGoals.filter((_, i) => i !== index));
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const startEdit = (index) => {
     const updated = [...goals];
@@ -105,43 +101,42 @@ function StudyPlanner() {
     setGoals(updated);
   };
 
-  const finishEdit = async(index) => {
-    try{
-    const goal = goals[index];
-    const res = await axios.put(`/api/goals/${goal._id}`,{
-      goal_name: goal.goal_name,
-      completed: goal.completed,
-    });
-    const updated= [...goals];
-    updated[index]={...res.data, isEditing: false};
-    setGoals(updated);
-  }catch(error){
-    console.log(error);
-  }
+  const finishEdit = async (index) => {
+    try {
+      const goal = goals[index];
+      const res = await axios.put(`/api/goals/${goal._id}`, {
+        goal_name: goal.goal_name,
+        completed: goal.completed,
+      });
+      const updated = [...goals];
+      updated[index] = { ...res.data, isEditing: false };
+      setGoals(updated);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const completedCount = goals.filter((goal) => goal.completed).length;
   const progress = goals.length > 0 ? (completedCount / goals.length) * 100 : 0;
 
   return (
-    <div className="">
-      <Navbar />
-      <div className="bg-linear-to-br from-green-300 via-pink-100 to-gray-400 p-10 min-h-screen">
-        <h1 className="text-5xl font-extrabold mb-8 text-center">
+    <div>
+      <div className="bg-linear-to-br from-green-300 via-green-100 to-green-300 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 p-10 min-h-screen">
+        <h1 className="text-5xl font-extrabold mb-10 text-center text-indigo-900 dark:text-white">
           Set your Goals 🚀
         </h1>
 
         {/* Input */}
-        <div className="flex items-center justify-center mb-6 space-x-3">
+        <div className="flex items-center justify-center mb-8 space-x-3">
           <input
             type="text"
             value={newGoal}
             onChange={(e) => setNewGoal(e.target.value)}
             placeholder="Add a new goal"
-            className="border rounded px-4 py-3 w-md text-lg"
+            className="border rounded px-4 py-3 w-md text-lg placeholder-gray-400 dark:placeholder-white"
           />
           <button
-            className="bg-green-600 text-white px-6 py-3 rounded-md hover:bg-green-800 cursor-pointer text-lg font-semibold"
+            className="bg-indigo-600 text-white px-6 py-3 rounded-md hover:bg-indigo-800 cursor-pointer text-lg font-semibold"
             onClick={addGoal}
           >
             + Add
@@ -149,13 +144,13 @@ function StudyPlanner() {
         </div>
 
         {/* Progress Bar */}
-        <div className="mb-8 max-w-4xl mx-auto">
-          <p className="mb-2 text-xl font-semibold text-center">
+        <div className="mb-10 max-w-4xl mx-auto">
+          <p className="mb-3 text-xl font-semibold text-center text-gray-800 dark:text-gray-200">
             Progress: {completedCount} / {goals.length} goals completed
           </p>
-          <div className="w-full bg-gray-400 rounded-full h-7">
+          <div className="w-full bg-gray-300 dark:bg-gray-700 rounded-full h-7">
             <div
-              className="bg-green-600 rounded-full h-7"
+              className="bg-indigo-600 dark:bg-indigo-500 rounded-full h-7 transition-all duration-300"
               style={{ width: `${progress}%` }}
             ></div>
           </div>
@@ -168,23 +163,21 @@ function StudyPlanner() {
               <ul
                 {...provided.droppableProps}
                 ref={provided.innerRef}
-                className="max-w-4xl mx-auto"
+                className="max-w-4xl mx-auto space-y-3"
               >
                 {goals.length === 0 ? (
-                  <p className="text-gray-600 font-semibold text-3xl mt-30 italic text-center">No goals yet</p>
+                  <p className="text-gray-600 dark:text-gray-400 font-semibold text-2xl italic text-center mt-20">
+                    No goals yet
+                  </p>
                 ) : (
                   goals.map((goal, index) => (
-                    <Draggable
-                      key={goal._id}
-                      draggableId={goal._id}
-                      index={index}
-                    >
+                    <Draggable key={goal._id} draggableId={goal._id} index={index}>
                       {(provided) => (
                         <li
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
-                          className="flex items-center justify-between bg-white px-6 py-6 rounded-xl shadow-md mb-2"
+                          className="flex items-center justify-between bg-white dark:bg-slate-800 px-6 py-6 rounded-xl shadow-md"
                         >
                           <div className="flex items-center">
                             <input
@@ -204,15 +197,14 @@ function StudyPlanner() {
                               <span
                                 className={`ml-4 font-bold text-xl ${
                                   goal.completed
-                                    ? "line-through text-gray-500"
-                                    : "text-black"
+                                    ? "line-through text-gray-500 dark:text-gray-400"
+                                    : "text-black dark:text-white"
                                 }`}
                               >
                                 {goal.goal_name}
                               </span>
                             )}
-                          </div>
-                          <div className="flex space-x-2">
+                          </div>                          <div className="flex space-x-2">
                             {goal.isEditing ? (
                               <button
                                 onClick={() => finishEdit(index)}
