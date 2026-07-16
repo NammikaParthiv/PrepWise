@@ -1,4 +1,3 @@
-import Navbar from "../pages/layouts/NavBar";
 import { useEffect, useState } from "react";
 import axios from "../utils/axios.js";
 
@@ -8,7 +7,6 @@ function Profile() {
   const [name, setName] = useState("");
   const [college, setCollege] = useState("");
 
-  // Photo
   const [photoFile, setPhotoFile] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
 
@@ -21,7 +19,6 @@ function Profile() {
         console.log("Error fetching profile:", err);
       }
     };
-
     fetchProfile();
   }, []);
 
@@ -31,17 +28,15 @@ function Profile() {
     setPhotoPreview(
       user?.profilePic_URL
         ? `http://localhost:2222${user.profilePic_URL}`
-        : "/user.png",
+        : "/user.png"
     );
     setPhotoFile(null);
     setIsEditing(true);
   };
 
-  // Handles user-side file selection
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
     setPhotoFile(file);
     setPhotoPreview(URL.createObjectURL(file));
   };
@@ -49,8 +44,6 @@ function Profile() {
   const handleSaveChanges = async () => {
     try {
       let res;
-
-      // Backend route switch: Use FormData if photo is changed, otherwise use pure JSON
       if (photoFile) {
         const formData = new FormData();
         formData.append("name", name);
@@ -62,12 +55,10 @@ function Profile() {
         });
       } else {
         res = await axios.put("/api/user/profile", {
-          name: name,
-          college: college,
+          name,
+          college,
         });
       }
-
-      // Handle both formats of backend responses safely
       const updatedUser = res.data.user || res.data;
       setUser(updatedUser);
       setIsEditing(false);
@@ -76,11 +67,11 @@ function Profile() {
       console.log("Error saving changes:", err);
     }
   };
+
   const handleDeletePhoto = async () => {
     const confirmDelete = window.confirm(
-      "Are you sure you want to remove your profile photo?",
+      "Are you sure you want to remove your profile photo?"
     );
-
     if (!confirmDelete) return;
 
     try {
@@ -101,25 +92,26 @@ function Profile() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-blue-300 via-violet-2 00 to-blue-300">
-      <Navbar />
-
+    <div className="min-h-screen bg-linear-to-br from-blue-200 via-violet-200 to-blue-200 dark:from-slate-900 dark:via-indigo-950 dark:to-slate-900 text-black dark:text-white transition-colors duration-300">
       <div className="pt-16 pb-16 px-12">
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-gray-800">My Profile</h1>
-          <p className="text-lg text-gray-600 mt-3">
+          <h1 className="text-5xl font-extrabold">My Profile</h1>
+          <p className="text-lg text-gray-700 dark:text-gray-300 mt-3">
             Manage your account and track your PrepWise achievements.
           </p>
         </div>
-        <div className="bg-white rounded-3xl shadow-2xl p-10 flex items-center justify-between relative">
+
+        <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl p-10 flex items-center justify-between relative">
           {!isEditing && (
             <button
-              className="absolute top-8 right-10 text-3xl hover:text-blue-600 transition cursor-pointer"
+              className="absolute top-8 right-10 text-3xl hover:text-violet-500 transition cursor-pointer"
               onClick={handleStartEditing}
             >
               ✏️
             </button>
           )}
+
+          {/* Profile Photo */}
           <div className="w-1/3 flex flex-col items-center">
             <img
               src={
@@ -129,8 +121,8 @@ function Profile() {
                       ? `http://localhost:2222${user.profilePic_URL}`
                       : "/user.png")
                   : user?.profilePic_URL
-                    ? `http://localhost:2222${user.profilePic_URL}`
-                    : "/user.png"
+                  ? `http://localhost:2222${user.profilePic_URL}`
+                  : "/user.png"
               }
               alt="Profile"
               className="w-52 h-52 rounded-full border-4 border-violet-500 object-cover shadow-xl"
@@ -138,7 +130,7 @@ function Profile() {
 
             {isEditing && (
               <div className="flex flex-col items-center gap-3 mt-6">
-                <label className="px-6 py-3 rounded-xl bg-violet-500 hover:bg-violet-600 text-white font-semibold cursor-pointer transition shadow-md">
+                <label className="px-6 py-3 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-semibold cursor-pointer transition shadow-md">
                   📷 Change Photo
                   <input
                     type="file"
@@ -148,68 +140,67 @@ function Profile() {
                   />
                 </label>
 
-                {user?.profilePic_URL && (
-                  <button
-                    onClick={handleDeletePhoto}
-                    className="px-6 py-3 rounded-xl bg-red-500 hover:bg-red-600 text-white font-semibold transition shadow-md cursor-pointer"
-                  >
-                    🗑 Remove Photo
-                  </button>
-                )}
+                <button
+                  onClick={handleDeletePhoto}
+                  className="px-6 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold transition shadow-md cursor-pointer"
+                >
+                  🗑 Delete Photo
+                </button>
               </div>
             )}
           </div>
 
+          {/* Profile Info */}
           <div className="w-2/3 pl-16">
             <div className="space-y-8">
               <div>
-                <p className="text-gray-500 text-lg">Full Name</p>
+                <p className="text-gray-600 dark:text-gray-400 text-lg">Full Name</p>
                 {isEditing ? (
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="text-2xl font-bold border-b-2 border-violet-500 focus:outline-none w-full py-1 mt-1 text-gray-800"
+                    className="text-2xl font-bold border-b-2 border-violet-500 focus:outline-none w-full py-1 mt-1 bg-transparent text-black dark:text-white"
                   />
                 ) : (
-                  <h2 className="text-4xl font-bold text-gray-800">
+                  <h2 className="text-4xl font-bold">
                     {user?.name || "User??"}
                   </h2>
                 )}
               </div>
 
               <div>
-                <p className="text-gray-500 text-lg">Email</p>
-                <h2 className="text-2xl text-gray-400 cursor-not-allowed select-none">
+                <p className="text-gray-600 dark:text-gray-400 text-lg">Email</p>
+                <h2 className="text-2xl text-gray-500 cursor-not-allowed select-none">
                   {user?.email || "xyz@gmail.com"}
                 </h2>
               </div>
+
               <div>
-                <p className="text-gray-500 text-lg">College</p>
+                <p className="text-gray-600 dark:text-gray-400 text-lg">College</p>
                 {isEditing ? (
                   <input
                     type="text"
                     value={college}
                     onChange={(e) => setCollege(e.target.value)}
-                    className="text-xl border-b-2 border-violet-500 focus:outline-none w-full py-1 mt-1 text-gray-800"
+                    className="text-xl border-b-2 border-violet-500 focus:outline-none w-full py-1 mt-1 bg-transparent text-black dark:text-white"
                   />
                 ) : (
-                  <h2 className="text-2xl text-gray-800">
-                    {user?.college || "?"}
-                  </h2>
+                  <h2 className="text-2xl">{user?.college || "?"}</h2>
                 )}
               </div>
+
               {isEditing && (
                 <div className="flex justify-end space-x-4 pt-4">
                   <button
                     onClick={handleCancel}
-                    className="px-5 py-2 rounded-xl border border-gray-300 text-gray-600 hover:bg-gray-100 font-semibold transition cursor-pointer"
+                    className="px-5 py-2 rounded-xl border border-gray-400 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 font-semibold transition cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleSaveChanges}
-                    className="px-6 py-2 rounded-xl bg-violet-500 hover:bg-violet-600 text-white font-semibold shadow-md transition cursor-pointer"
+                    className="px-6 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-semibold shadow-md transition cursor-pointer"
                   >
                     Save
                   </button>
@@ -218,34 +209,34 @@ function Profile() {
             </div>
           </div>
         </div>
+
+        {/* Achievements */}
         <div className="mt-20">
-          <h2 className="text-4xl font-bold text-center mb-12">
-            🏆 Achievements
-          </h2>
+          <h2 className="text-4xl font-bold text-center mb-12">🏆 Achievements</h2>
           <div className="grid grid-cols-2 gap-10">
             <AchievementCard
               icon="🎤"
               title="Mock Interviews"
               value="18"
-              color="from-violet-500 to-purple-600"
+              color="from-violet-600 to-purple-700"
             />
             <AchievementCard
               icon="📄"
               title="Resume Analysis"
               value="12"
-              color="from-orange-400 to-orange-600"
+              color="from-orange-500 to-orange-700"
             />
             <AchievementCard
               icon="⭐"
               title="Best Interview Score"
               value="94 / 100"
-              color="from-green-500 to-emerald-600"
+              color="from-green-600 to-emerald-700"
             />
             <AchievementCard
               icon="🏅"
               title="Best Resume Score"
               value="91%"
-              color="from-blue-500 to-cyan-600"
+              color="from-blue-600 to-cyan-700"
             />
           </div>
         </div>
@@ -255,6 +246,7 @@ function Profile() {
 }
 
 export default Profile;
+
 
 function AchievementCard({ icon, title, value, color }) {
   return (

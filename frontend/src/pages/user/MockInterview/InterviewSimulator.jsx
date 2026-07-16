@@ -21,6 +21,7 @@ function InterviewSimulator() {
         state: {
           interview: res.data.interview,
         },
+        replace:true,
       });
     } catch (error) {
       console.log(error);

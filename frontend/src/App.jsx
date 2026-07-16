@@ -16,14 +16,18 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import Statistics from "./pages/admin/Statistics";
 import References from "./pages/References";
 import Users from "./pages/admin/UsersPage";
+import { useLocation } from "react-router-dom";
 import ProtectedRoute from "./pages/components/ProtectedRoute";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./context/AuthProvider";
 function App() {
   const { user } = useAuth();
+  const location = useLocation();
+  const hideNavbar = ["/login","/register","/","/u/interview_simulator/session"];
+  const showNavbar = !hideNavbar.includes(location.pathname);
   return (
       <div className="min-h-screen bg-white dark:bg-slate-900 text-black dark:text-white transition-colors duration-300">
-        <NavBar />
+        {showNavbar && <NavBar />}
       <Routes>
         {/* Public Routes */}
         <Route
