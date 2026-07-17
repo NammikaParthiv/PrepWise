@@ -136,21 +136,20 @@ function StudyPlanner() {
             className="border rounded px-4 py-3 w-md text-lg placeholder-gray-400 dark:placeholder-white"
           />
           <button
-            className="bg-indigo-600 text-white px-6 py-3 rounded-md hover:bg-indigo-800 cursor-pointer text-lg font-semibold"
+            className="bg-green-500 text-white px-6 py-3 rounded-md hover:bg-green-700 cursor-pointer text-lg font-semibold"
             onClick={addGoal}
           >
             + Add
           </button>
         </div>
 
-        {/* Progress Bar */}
         <div className="mb-10 max-w-4xl mx-auto">
           <p className="mb-3 text-xl font-semibold text-center text-gray-800 dark:text-gray-200">
             Progress: {completedCount} / {goals.length} goals completed
           </p>
           <div className="w-full bg-gray-300 dark:bg-gray-700 rounded-full h-7">
             <div
-              className="bg-indigo-600 dark:bg-indigo-500 rounded-full h-7 transition-all duration-300"
+              className="bg-green-500 dark:bg-green-600 rounded-full h-7 transition-all duration-300"
               style={{ width: `${progress}%` }}
             ></div>
           </div>

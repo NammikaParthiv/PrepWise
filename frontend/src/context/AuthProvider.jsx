@@ -32,10 +32,10 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={{ user, setUser, loading }}>
+      {/* !loading -> wait until authentication is complete before rendering */}
       {!loading && children}
     </AuthContext.Provider>
   );
 };
 
-const useAuth = () => useContext(AuthContext);
-export {useAuth};
+export const useAuth = () => useContext(AuthContext);

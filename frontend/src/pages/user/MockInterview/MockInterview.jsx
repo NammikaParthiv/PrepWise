@@ -9,7 +9,7 @@ function MockInterview() {
   const [answer, setAnswer] = useState("");
   const [allAnswers, setAllAnswers] = useState([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true);
 
   const interview = location.state?.interview;
 
