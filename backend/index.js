@@ -10,6 +10,7 @@ import interviewRoutes from "./routes/interview.js";
 import adminRoutes from "./routes/admin.js";
 import goalRoutes from "./routes/goal.js";
 import referenceRoutes from "./routes/reference.js";
+import redis from "./config/redis.js";
 
 const app = express();
 

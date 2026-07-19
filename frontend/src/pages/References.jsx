@@ -1,12 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import axios from "../utils/axios.js";
 import { useAuth } from "../context/AuthProvider.jsx";
-import { useTheme } from "../context/ThemeProvider.jsx";
 import { FaPlus, FaTrash, FaFilePdf, FaImage, FaTimes, FaBookOpen } from "react-icons/fa";
 
 const References = () => {
   const { user } = useAuth();
-  const { darkMode } = useTheme();
   
   const isAdmin = user?.role === "admin";
   const [activeCategory, setActiveCategory] = useState("Frontend");
@@ -26,6 +24,19 @@ const References = () => {
     };
     fetchReferences();
   }, []);
+  
+  // const newFile = {
+    //   id: Date.now(),
+    //   name: file.name.split('.')[0],
+    //   url: URL.createObjectURL(file),
+    //   type: file.type === "application/pdf" ? "pdf" : "photo",
+    //   date: new Date().toLocaleDateString(),
+    // };
+
+    // setMaterials(prev => ({ 
+    //   ...prev, 
+    //   [activeCategory]: [...prev[activeCategory], newFile] 
+    // }));
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
@@ -155,35 +166,3 @@ const References = () => {
 
 export default References;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// const newFile = {
-    //   id: Date.now(),
-    //   name: file.name.split('.')[0],
-    //   url: URL.createObjectURL(file),
-    //   type: file.type === "application/pdf" ? "pdf" : "photo",
-    //   date: new Date().toLocaleDateString(),
-    // };
-
-    // setMaterials(prev => ({ 
-    //   ...prev, 
-    //   [activeCategory]: [...prev[activeCategory], newFile] 
-    // }));
