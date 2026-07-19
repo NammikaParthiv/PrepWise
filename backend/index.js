@@ -3,14 +3,19 @@ import express from "express";
 import cors from "cors";
 import path from "path";
 const PORT = process.env.PORT || 2222;
+import redis from "./config/redis.js";
+
 import connect2DB  from "./connect2DB.js";
+import "./config/redis.js";
+import "./workers/index.js";
+
 import resumeRoutes from "./routes/resume.js"
 import userRoutes from "./routes/user.js";
 import interviewRoutes from "./routes/interview.js";
 import adminRoutes from "./routes/admin.js";
 import goalRoutes from "./routes/goal.js";
 import referenceRoutes from "./routes/reference.js";
-import redis from "./config/redis.js";
+
 
 const app = express();
 

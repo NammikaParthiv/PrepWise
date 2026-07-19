@@ -1,10 +1,31 @@
 import Interview from "../models/interview.js";
 import { ai } from "../config/gemini.js";
+import {interviewQueue} from "../queues/interview_queue.js"
 
 export const generateInterview = async (req, res) => {
   const { job_role } = req.body;
   if (!job_role) {
     return res.status(400).json({ msg: "Job role is required" });
+  }
+
+  try{
+     const intervoew = await Interview.create({
+      user: req.user._id,
+      job_role,
+      question: [],
+      status:"processing",
+     });
+
+     await interviewQueue.add("generateInterview",{
+       interviewId: interview._id,
+     });
+     return res.status(201).json({
+        msg:"Interview Gneration has started",
+        interviewId: interview._id,
+        status: interview.status,
+     })
+  }catch(error){
+    console.log(error);
   }
 
   try {
@@ -44,6 +65,7 @@ export const generateInterview = async (req, res) => {
     return res.status(500).json({ msg: "Server error", errror: error.message });
   }
 };
+
 export const submitInterview = async (req, res) => {
   const { interviewId, answers } = req.body;
 
