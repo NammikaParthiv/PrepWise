@@ -4,6 +4,21 @@ import {interviewQueue} from "../queues/interview_queue.js"
 
 export const generateInterview = async (req, res) => {
   const { job_role } = req.body;
+  const existingInterview = await Interview.findOne({
+    job_role,
+    status:"completed",
+  });
+  if(existingInterview){
+    const interview = await Interview.create({
+      user: req.user._id,
+      job_role,
+      questions: existingInterview.questions,
+    });
+    return res.status(201).json({
+      msg:"Intervoew is Generated Successfully",
+      interview,
+    });
+  }
   if (!job_role) {
     return res.status(400).json({ msg: "Job role is required" });
   }

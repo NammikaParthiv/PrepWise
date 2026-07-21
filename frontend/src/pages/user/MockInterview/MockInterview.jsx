@@ -113,7 +113,7 @@ function MockInterview() {
           value={answer}
           onChange={(e) => setAnswer(e.target.value)}
           placeholder="Write your answer here..."
-          className={`w-[95%] h-[350px] m-10 p-8 text-2xl font-medium rounded-lg resize-none focus:outline-none focus:ring-4 focus:ring-emerald-500 border ${colors.inputBg} ${isDarkMode ? "border-slate-600 placeholder-slate-500" : "border-amber-200 placeholder-slate-400"}`}
+          className={`w-[95%] h-87 m-10 p-8 text-2xl font-medium rounded-lg resize-none focus:outline-none focus:ring-4 focus:ring-emerald-500 border ${colors.inputBg} ${isDarkMode ? "border-slate-600 placeholder-slate-500" : "border-amber-200 placeholder-slate-400"}`}
         />
         
         <div className="flex justify-center pb-10">
