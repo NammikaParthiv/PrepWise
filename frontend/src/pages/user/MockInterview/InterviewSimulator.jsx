@@ -17,10 +17,36 @@ function InterviewSimulator() {
       const res = await axios.post("/api/interview/generate", {
         job_role: role,
       });
-      navigate("/u/interview_simulator/session", {
-        state: { interview: res.data.interview },
-        replace: true,
-      });
+      if(res.data.interview){
+        navigate("/u/interview_simulator/session",{
+          state:{
+            interview: res.data.interview,
+          },
+          replace: true,
+        });
+      }else{
+        //polling -> req for the same api until it gives questions
+        const interviewId = res.data.interviewId;
+        const interval = setInterval(async()=>{
+          const response = await axios.get(`/api/interview/${interviewId}`);
+
+          if(response.data.interview.status === "completed"){
+            clearInterval(interval);
+            setLoading(false);
+            navigate("/u/interview_simulator/session",{
+              state:{
+                interview: response.data.interview,
+              },
+              replace: true,
+            });
+          }
+          if(response.data.interview.status === "failed"){
+            clearInterval(interval);
+            alert("Interview generation failed!");
+            setLoading(false);
+          }
+        },2000); //2 sec
+      }
     } catch (error) {
       console.log(error);
       alert(error.response?.data?.msg || error.message);

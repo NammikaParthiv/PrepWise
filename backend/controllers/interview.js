@@ -1,85 +1,114 @@
 import Interview from "../models/interview.js";
 import { ai } from "../config/gemini.js";
 import {interviewQueue} from "../queues/interview_queue.js"
+import redisClient from "../config/redis.js";
 
 export const generateInterview = async (req, res) => {
   const { job_role } = req.body;
-  const existingInterview = await Interview.findOne({
-    job_role,
-    status:"completed",
-  });
-  if(existingInterview){
-    const interview = await Interview.create({
-      user: req.user._id,
-      job_role,
-      questions: existingInterview.questions,
-    });
-    return res.status(201).json({
-      msg:"Intervoew is Generated Successfully",
-      interview,
-    });
-  }
+
   if (!job_role) {
     return res.status(400).json({ msg: "Job role is required" });
   }
 
-  try{
-     const intervoew = await Interview.create({
-      user: req.user._id,
-      job_role,
-      question: [],
-      status:"processing",
-     });
+    try{
+      //console.log("1. Request received");
 
-     await interviewQueue.add("generateInterview",{
-       interviewId: interview._id,
-     });
-     return res.status(201).json({
-        msg:"Interview Gneration has started",
-        interviewId: interview._id,
-        status: interview.status,
-     })
-  }catch(error){
-    console.log(error);
-  }
+    const normalizeRole = job_role.trim().toLowerCase();
+    //console.log("2. job role normalised");
 
-  try {
-    const prompt = `Generate 1 real-time company interview questions for graduating students from b.tech for the job-role:${job_role}.
-     Return only a valid json array as given in the below example:
-     example:
-      [
-        "Question 1",
-        "Question 2",
-      ]
-     `;
-    const result = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: prompt,
-    });
+    const cachedQuestions = await redisClient.get(
+      `interview:${normalizeRole}`
+      );
+      //console.log("3. Checked redis");
 
-    const response = result.text;
 
-    const cleaned = response
-      .replace(/```json/g, "")
-      .replace(/```/g, "")
-      .trim();
-    const questions = JSON.parse(cleaned);
+    if(cachedQuestions){
+      const questions = JSON.parse(cachedQuestions);
+
+      const interview = await Interview.create({
+        user: req.user._id,
+        job_role,
+        questions: questions.map((q)=>({
+          question:q,
+        })),
+        status: "completed",
+      });
+
+      return res.status(201).json({
+        msg:"Interview generated successfully",interview,
+      });
+    }
+      console.log("4. Not Found in Cache");
+
 
     const interview = await Interview.create({
       user: req.user._id,
       job_role,
-      questions: questions.map((q) => ({
-        question: q,
-      })),
+      questions:[],
+      status:"waiting",
     });
-    res
-      .status(201)
-      .json({ msg: "Interview Generated Successfully", interview });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({ msg: "Server error", errror: error.message });
-  }
-};
+
+     const existingInterview = await interviewQueue.getJob(normalizeRole);
+     console.log("5. BULLMQ received");
+
+     if(!existingInterview){
+        await interviewQueue.add(
+          "generateInterview",{
+            job_role:normalizeRole,
+          },{
+            jobId: normalizeRole,
+            removeOnComplete: true,
+          }
+        );
+    }
+    console.log("6. Checked all clear");
+
+    return res.status(202).json({
+      msg:"Interview is being generated",
+      interviewId : interview._id,
+    });
+  // try {
+  //   const prompt = `Generate 1 real-time company interview questions for graduating students from b.tech for the job-role:${job_role}.
+  //    Return only a valid json array as given in the below example:
+  //    example:
+  //     [
+  //       "Question 1",
+  //       "Question 2",
+  //     ]
+  //    `;
+  //   const result = await ai.models.generateContent({
+  //     model: "gemini-2.5-flash",
+  //     contents: prompt,
+  //   });
+
+  //   const response = result.text;
+
+  //   const cleaned = response
+  //     .replace(/```json/g, "")
+  //     .replace(/```/g, "")
+  //     .trim();
+  //   const questions = JSON.parse(cleaned);
+
+  //   const interview = await Interview.create({
+  //     user: req.user._id,
+  //     job_role,
+  //     questions: questions.map((q) => ({
+  //       question: q,
+  //     })),
+  //   });
+  //   res
+  //     .status(201)
+  //     .json({ msg: "Interview Generated Successfully", interview });
+  // } catch (error) {
+  //   console.log(error);
+  //   return res.status(500).json({ msg: "Server error", errror: error.message });
+  // }
+   }catch(error){
+      console.log(error);
+      return res.status(500).json({msg:"Server error"});
+   };
+
+  };
 
 export const submitInterview = async (req, res) => {
   const { interviewId, answers } = req.body;
@@ -183,6 +212,7 @@ export const interviewHistory = async (req, res) => {
     });
   }
 };
+
 export const getInterview = async (req, res) => {
   const { id } = req.params;
   try {

@@ -43,8 +43,8 @@ const interviewSchema = new mongoose.Schema(
     },
     status:{
       type: String,
-      enum: ["processing","completed","failed"],
-      default: "processing",
+      enum: ["waiting","completed","failed"],
+      default: "waiting",
     },
   },
   { timestamps: true },
