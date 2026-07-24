@@ -1,12 +1,16 @@
 import { Worker } from "bullmq";
 import Interview from "../models/interview.js";
 import redisClient from "../config/redis.js";
+import bullmqConnection from "../config/bullmq.js";
 import { ai } from "../config/gemini.js";
 
 const interviewWorker = new Worker(
   "interviewGenerationQ",
-  async (job) => {
+  
+  async (job) => {  
     const { job_role } = job.data;
+    console.log(`Generating questions for ${job_role}`);
+    console.log(job.data);
     try {
       const prompt = `Generate 2 real-time company interview questions for graduating students from b.tech for the job-role:${job_role}.
      Return only a valid json array as given in the below example:
@@ -65,7 +69,7 @@ const interviewWorker = new Worker(
     }
   },
     {
-    connection: redisClient,
+    connection: bullmqConnection,
     },
 );
 

@@ -16,11 +16,15 @@ export const generateInterview = async (req, res) => {
     const normalizeRole = job_role.trim().toLowerCase();
     //console.log("2. job role normalised");
 
+    // if(!redisClient.isReady){
+    //    return res.status(503).json({
+    //       msg:"Interview service is temporarily unavaliable",
+    //    });
+    // }
     const cachedQuestions = await redisClient.get(
       `interview:${normalizeRole}`
       );
       //console.log("3. Checked redis");
-
 
     if(cachedQuestions){
       const questions = JSON.parse(cachedQuestions);
@@ -38,8 +42,7 @@ export const generateInterview = async (req, res) => {
         msg:"Interview generated successfully",interview,
       });
     }
-      console.log("4. Not Found in Cache");
-
+      //console.log("4. Not Found in Cache");
 
     const interview = await Interview.create({
       user: req.user._id,
@@ -47,9 +50,9 @@ export const generateInterview = async (req, res) => {
       questions:[],
       status:"waiting",
     });
-
+    
      const existingInterview = await interviewQueue.getJob(normalizeRole);
-     console.log("5. BULLMQ received");
+     //console.log("5. BULLMQ received");
 
      if(!existingInterview){
         await interviewQueue.add(
@@ -61,7 +64,7 @@ export const generateInterview = async (req, res) => {
           }
         );
     }
-    console.log("6. Checked all clear");
+    //console.log("6. Checked all clear");
 
     return res.status(202).json({
       msg:"Interview is being generated",

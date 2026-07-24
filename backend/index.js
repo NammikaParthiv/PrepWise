@@ -3,10 +3,9 @@ import express from "express";
 import cors from "cors";
 import path from "path";
 const PORT = process.env.PORT || 2222;
-import redis from "./config/redis.js";
 
 import connect2DB  from "./connect2DB.js";
-import "./config/redis.js";
+import redisClient from "./config/redis.js";
 import "./workers/index.js";
 
 import resumeRoutes from "./routes/resume.js"

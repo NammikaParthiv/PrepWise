@@ -1,6 +1,9 @@
 import {Queue} from "bullmq";
-import  redisClient  from "../config/redis.js";
+import bullmqConnection from "../config/bullmq.js";
 
-export const interviewQueue = new Queue("interviewGenerationQ",{
-    connection: redisClient,
-});
+export const interviewQueue = new Queue(
+    "interviewGenerationQ",
+    {
+      connection: bullmqConnection,
+    }
+);
