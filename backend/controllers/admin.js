@@ -91,3 +91,25 @@ export const deleteReference = async (req, res) => {
     return res.status(500).json({ msg: "Server error"});
   }
 };
+
+export const updateReference = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, category } = req.body;
+
+    await Reference.findByIdAndUpdate(id, { name }, { new: true });
+
+    const refs = await Reference.find();
+    const grouped = { Frontend: [], Backend: [], DSA: [] };
+    refs.forEach((ref) => {
+      if (grouped[ref.category]) {
+        grouped[ref.category].push(ref);
+      }
+    });
+
+    return res.json(grouped);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ msg: "Server error", error: error.message });
+  }
+};
