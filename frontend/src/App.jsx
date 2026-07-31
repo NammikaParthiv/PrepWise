@@ -20,10 +20,12 @@ import { useLocation } from "react-router-dom";
 import ProtectedRoute from "./pages/components/ProtectedRoute";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./context/AuthProvider";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 function App() {
   const { user } = useAuth();
   const location = useLocation();
-  const hideNavbar = ["/login","/register","/","/u/interview_simulator/session"];
+  const hideNavbar = ["/login","/register","/","/u/interview_simulator/session","/forgot-password","/reset-password"];
   const showNavbar = !hideNavbar.includes(location.pathname);
   return (
       <div className="min-h-screen bg-white dark:bg-slate-900 text-black dark:text-white transition-colors duration-300">
@@ -46,6 +48,8 @@ function App() {
         />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword/>} />
 
         {/* User Protected Routes */}
 

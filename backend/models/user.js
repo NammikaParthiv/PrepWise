@@ -1,35 +1,46 @@
 import express from "express";
 import mongoose from "mongoose";
 
-const UserSchema = new mongoose.Schema({
-    name:{
-        type: String,
-        required: true,
+const UserSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
     },
-    email:{
-        type: String,
-        reuired: true,
-        unique: true,
+    email: {
+      type: String,
+      reuired: true,
+      unique: true,
     },
-    password:{
-        type: String,
-        required: true,
+    password: {
+      type: String,
+      required: true,
     },
-    role:{
-        type: String,
-        enum: ["user","admin"],
-        default: "user",
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
     },
-    college:{
-        type: String,
-        default:""
+    college: {
+      type: String,
+      default: "",
     },
-    profilePic_URL:{
-        type: String,
+    profilePic_URL: {
+      type: String,
     },
-},{timestamps: true});
+    resetOTP: {
+      type: String,
+      default: null,
+    },
+    resetOTPExpires: {
+      type: Date,
+      default: null,
+    },
+  },
+  { timestamps: true },
+);
 
-const User = mongoose.model("User",UserSchema);
+const User = mongoose.model("User", UserSchema);
 
 // module.exports User;
 export default User;

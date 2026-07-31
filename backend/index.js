@@ -20,9 +20,20 @@ const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
+
+const allowedOrigins= [
+    process.env.CLIENT_URL,
+    "http://localhost:5173"
+];
 //console.log("CLIENT_URL =", process.env.CLIENT_URL);
 app.use(cors({
-    origin: process.env.CLIENT_URL,
+    origin: function (origin,callback){
+        if(!origin ||allowedOrigins.includes(origin)){
+            callback(null, true);
+        }else{
+            callback(new Error("Not allowed by cors"));
+        }
+    },
     credentials: true,
 }));
 

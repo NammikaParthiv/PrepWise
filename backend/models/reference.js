@@ -23,6 +23,10 @@ const referenceSchema = new mongoose.Schema({
     enum: ["Frontend", "Backend", "DSA"],
     required: true,
   },
+  order:{
+    type: Number,
+    default: 0,
+  }
 },{timestamps: true});
 
 export default mongoose.model("Reference", referenceSchema);

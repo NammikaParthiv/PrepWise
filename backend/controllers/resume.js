@@ -35,6 +35,7 @@ ${pdfData.text}
 
 Job Description:
 ${job_description}
+also mention in which section i have to change things and what to improve
 `;
     const result = await ai.models.generateContent({
       model: "gemini-2.5-flash",

@@ -5,7 +5,7 @@ import Reference from "../models/reference.js";
 
 export const getReferences = async (req, res) => {
   try {
-    const refs = await Reference.find();
+    const refs = await Reference.find().sort({order: 1});
     const grouped = { Frontend: [], Backend: [], DSA: [] };
 
     refs.forEach((ref) => {
@@ -13,7 +13,6 @@ export const getReferences = async (req, res) => {
     });
 
     return res.json(grouped);
-
   } catch (error) {
     console.log(error);
     return res.status(500).json({ msg: "Server error" });
@@ -97,9 +96,41 @@ export const updateReference = async (req, res) => {
     const { id } = req.params;
     const { name, category } = req.body;
 
-    await Reference.findByIdAndUpdate(id, { name }, { new: true });
+    await Reference.findByIdAndUpdate(id, { name }, { returnDocument: 'after' });
 
     const refs = await Reference.find();
+    const grouped = { Frontend: [], Backend: [], DSA: [] };
+    refs.forEach((ref) => {
+      if (grouped[ref.category]) {
+        grouped[ref.category].push(ref);
+      }
+    });
+
+    return res.json(grouped);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ msg: "Server error", error: error.message });
+  }
+};
+
+export const reorderReferences = async (req, res) => {
+  try {
+    const { category, items } = req.body;
+
+    if (!category || !Array.isArray(items)) {
+      return res.status(400).json({ msg: "Category and items array are required" });
+    }
+     const bulkOperations = items.map((id, index) => ({
+      updateOne: {
+        filter: { _id: id, category },
+        update: { $set: { order: index } },
+      },
+    }));
+
+    if (bulkOperations.length > 0) {
+      await Reference.bulkWrite(bulkOperations);
+    }
+    const refs = await Reference.find().sort({ order: 1 });
     const grouped = { Frontend: [], Backend: [], DSA: [] };
     refs.forEach((ref) => {
       if (grouped[ref.category]) {
