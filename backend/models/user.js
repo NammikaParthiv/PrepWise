@@ -1,4 +1,3 @@
-import express from "express";
 import mongoose from "mongoose";
 
 const UserSchema = new mongoose.Schema(
@@ -9,7 +8,7 @@ const UserSchema = new mongoose.Schema(
     },
     email: {
       type: String,
-      reuired: true,
+      required: true,
       unique: true,
     },
     password: {
@@ -25,8 +24,18 @@ const UserSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    phone: {
+      type: String,
+      default: "+91 ",
+    },
+    gender: {
+      type: String,
+      enum: ["Male", "Female", "Other", "Prefer not to say"],
+      default: "Prefer not to say",
+    },
     profilePic_URL: {
       type: String,
+      default: "",
     },
     resetOTP: {
       type: String,
@@ -37,10 +46,9 @@ const UserSchema = new mongoose.Schema(
       default: null,
     },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 const User = mongoose.model("User", UserSchema);
 
-// module.exports User;
 export default User;

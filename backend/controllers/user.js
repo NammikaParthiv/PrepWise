@@ -3,6 +3,8 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import fs from "fs";
 import path from "path";
+import Interview from "../models/interview.js";
+import Resume from "../models/resume.js";
 import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
@@ -85,7 +87,31 @@ export const getProfile = async (req, res) => {
       return res.status(404).json({ msg: "User not found" });
     }
 
-    res.status(200).json(user);
+    const interviews = await Interview.find({ user: req.user._id });
+    const resumes = await Resume.find({ user: req.user._id });
+
+    const totalInterviews = interviews.length;
+    const totalResumes = resumes.length;
+
+    const bestInterviewScore = interviews.length > 0
+      ? Math.max(...interviews.map((i) => i.overallScore || 0))
+      : 0;
+
+    const bestResumeScore = resumes.length > 0
+      ? Math.max(...resumes.map((r) => r.score || 0))
+      : 0;
+
+    const userProfileData = {
+      ...user.toObject(),
+      stats: {
+        totalInterviews,
+        totalResumes,
+        bestInterviewScore,
+        bestResumeScore,
+      },
+    };
+
+    res.status(200).json(userProfileData);
   } catch (error) {
     console.log(error);
     res.status(500).json({ msg: "Server Error" });
@@ -100,7 +126,7 @@ export const updateProfile = async (req, res) => {
       return res.status(404).json({ msg: "User not found" });
     }
 
-    if (req.body.name) {
+    if (req.body.name !== undefined) {
       user.name = req.body.name;
     }
 
@@ -108,7 +134,22 @@ export const updateProfile = async (req, res) => {
       user.college = req.body.college;
     }
 
+    if (req.body.phone !== undefined) {
+      user.phone = req.body.phone;
+    }
+
+    if (req.body.gender !== undefined) {
+      user.gender = req.body.gender;
+    }
+
     if (req.file) {
+      if (user.profilePic_URL) {
+        const oldFilePath = path.join(process.cwd(), user.profilePic_URL.replace(/^\/+/, ""));
+        if (fs.existsSync(oldFilePath)) {
+          fs.unlinkSync(oldFilePath);
+        }
+      }
+
       user.profilePic_URL = `/uploads/${req.file.filename}`;
     }
 
