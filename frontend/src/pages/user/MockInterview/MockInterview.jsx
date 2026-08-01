@@ -14,14 +14,15 @@ function MockInterview() {
   const [phase, setPhase] = useState("reading"); 
   const [timeLeft, setTimeLeft] = useState(30);
 
-  // Transcription, Speech metrics (pauses/lag), & Media Refs
+  // Transcription State & Refs
   const [currentTranscript, setCurrentTranscript] = useState("");
-  const speechMetricsRef = useRef({ wordTimestamps: [], lastWordTime: null, longPausesCount: 0 });
+  const accumulatedTranscriptRef = useRef(""); // Keeps track of everything said across auto-restarts
   const recognitionRef = useRef(null);
   const videoRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const recordedChunksRef = useRef([]);
   const [stream, setStream] = useState(null);
+  const isAnsweringRef = useRef(false);
 
   const interview = location.state?.interview;
   const questions = interview?.questions || [];
@@ -47,56 +48,95 @@ function MockInterview() {
       if (mediaStream) {
         mediaStream.getTracks().forEach((track) => track.stop());
       }
+      if (recognitionRef.current) {
+        try { recognitionRef.current.stop(); } catch(e) {}
+      }
     };
   }, []);
 
-  // 2. Start Speech Recognition & Tracking Speech Lag / Pauses
+  // 2. Unstoppable Speech Recognition Engine
   const startSpeechRecognition = useCallback(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) return;
+    if (!SpeechRecognition) {
+      console.warn("Speech Recognition API not supported in this browser.");
+      return;
+    }
 
-    setCurrentTranscript(""); 
-    speechMetricsRef.current = { wordTimestamps: [], lastWordTime: Date.now(), longPausesCount: 0 };
+    // Don't reset accumulated transcript if it's already running for this question
+    isAnsweringRef.current = true;
 
-    const recognition = new SpeechRecognition();
-    recognitionRef.current = recognition;
-    recognition.continuous = true;
-    recognition.interimResults = false; 
-    recognition.lang = "en-US";
+    try {
+      const recognition = new SpeechRecognition();
+      recognitionRef.current = recognition;
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = "en-US";
 
-    recognition.onresult = (event) => {
-      const now = Date.now();
-      let textChunk = "";
+      recognition.onresult = (event) => {
+        let interimText = "";
+        let newFinalText = "";
 
-      for (let i = event.resultIndex; i < event.results.length; ++i) {
-        if (event.results[i].isFinal) {
-          const phrase = event.results[i][0].transcript.trim();
-          textChunk += phrase + " ";
-
-          const lastTime = speechMetricsRef.current.lastWordTime;
-          if (lastTime) {
-            const gapSeconds = (now - lastTime) / 1000;
-            if (gapSeconds > 3.5) {
-              speechMetricsRef.current.longPausesCount += 1;
-            }
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          const piece = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            newFinalText += piece + " ";
+          } else {
+            interimText += piece;
           }
-          speechMetricsRef.current.lastWordTime = now;
         }
-      }
-      setCurrentTranscript((prev) => prev + textChunk);
-    };
 
-    recognition.start();
+        if (newFinalText) {
+          accumulatedTranscriptRef.current += newFinalText;
+        }
+
+        // Display everything accumulated so far + what's currently being said live
+        setCurrentTranscript(accumulatedTranscriptRef.current + interimText);
+      };
+
+      recognition.onerror = (event) => {
+        // Suppress benign no-speech or aborted logs, handle rest gracefully
+        if (event.error !== "no-speech" && event.error !== "aborted") {
+          console.warn("Speech recognition warning/error:", event.error);
+        }
+      };
+
+      recognition.onend = () => {
+        // If we are still actively in the answering phase, seamlessly restart the engine 
+        // so it never cuts off the candidate regardless of pauses or browser limits.
+        if (isAnsweringRef.current) {
+          try {
+            recognition.start();
+          } catch (e) {
+            // Fallback timeout if browser throttles rapid restarts
+            setTimeout(() => {
+              if (isAnsweringRef.current && recognitionRef.current) {
+                try { recognitionRef.current.start(); } catch (err) {}
+              }
+            }, 300);
+          }
+        }
+      };
+
+      recognition.start();
+    } catch (err) {
+      console.error("Failed to start speech recognition instance:", err);
+    }
   }, []);
 
   const stopSpeechRecognition = useCallback(() => {
+    isAnsweringRef.current = false;
     if (recognitionRef.current) {
-      recognitionRef.current.stop();
+      try {
+        recognitionRef.current.stop();
+      } catch (e) {}
     }
   }, []);
 
   const startRecording = useCallback(() => {
     recordedChunksRef.current = [];
+    accumulatedTranscriptRef.current = "";
+    setCurrentTranscript("");
+    
     if (!stream) return;
 
     try {
@@ -109,7 +149,7 @@ function MockInterview() {
         }
       };
 
-      mediaRecorder.start();
+      mediaRecorder.start(1000); 
       startSpeechRecognition(); 
     } catch (error) {
       console.error("Error starting media recorder:", error);
@@ -130,12 +170,17 @@ function MockInterview() {
         resolve(blob);
       };
 
-      mediaRecorder.stop();
+      try {
+        mediaRecorder.stop();
+      } catch (e) {
+        resolve(null);
+      }
     });
   }, [stopSpeechRecognition]);
 
   const completeInterview = useCallback(async (finalAnswers) => {
     setIsAnalyzing(true);
+    stopSpeechRecognition();
     if (stream) {
       stream.getTracks().forEach((track) => track.stop());
     }
@@ -153,7 +198,7 @@ function MockInterview() {
       alert(error.response?.data?.msg || "Failed to submit interview");
       setIsAnalyzing(false);
     }
-  }, [stream, interview, navigate]);
+  }, [stream, interview, navigate, stopSpeechRecognition]);
 
   const nextQuestion = useCallback(async () => {
     let videoBlob = null;
@@ -161,14 +206,20 @@ function MockInterview() {
       videoBlob = await stopRecordingHelper();
     }
 
+    const finalAnswerText = accumulatedTranscriptRef.current.trim() || currentTranscript.trim();
+
     const updatedAnswers = [...allAnswers];
     updatedAnswers[queNo - 1] = {
       question: questions[queNo - 1]?.question || "",
-      transcript: currentTranscript, 
-      longPausesDetected: speechMetricsRef.current.longPausesCount,
+      transcript: finalAnswerText || "[No clear speech detected]", 
+      longPausesDetected: 0,
       videoBlob: videoBlob,
     };
     setAllAnswers(updatedAnswers);
+
+    // Reset transcript storage for the next question
+    accumulatedTranscriptRef.current = "";
+    setCurrentTranscript("");
 
     if (queNo < questions.length) {
       setQueNo((prev) => prev + 1);
@@ -206,6 +257,7 @@ function MockInterview() {
 
   const handleExit = () => {
     if (window.confirm("Are you sure you want to exit? Your progress will not be saved.")) {
+      stopSpeechRecognition();
       if (stream) {
         stream.getTracks().forEach((track) => track.stop());
       }
@@ -238,7 +290,6 @@ function MockInterview() {
 
   return (
     <div className={`min-h-screen pb-10 ${colors.bg} ${colors.text} transition-colors duration-500 pt-4 sm:pt-6 px-4 sm:px-10`}>
-      {/* Top Header Navigation */}
       <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
         <button
           onClick={() => setIsDarkMode(!isDarkMode)}
@@ -257,15 +308,12 @@ function MockInterview() {
         </button>
       </div>
 
-      {/* Progress Bar */}
       <div className="bg-slate-200 dark:bg-slate-800 h-2.5 sm:h-3 rounded-lg mb-6 shadow-inner">
         <div className="bg-emerald-500 h-2.5 sm:h-3 rounded-lg transition-all duration-500" style={{ width: `${(queNo / questions.length) * 100}%` }} />
       </div>
 
-      {/* Main Grid Container */}
       <div className={`grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 rounded-2xl shadow-2xl p-4 sm:p-8 border ${colors.card}`}>
         
-        {/* Left Side: Question and Controls */}
         <div className="flex flex-col justify-between space-y-6 order-2 lg:order-1">
           <div>
             <div className="flex flex-wrap justify-between items-center gap-2 mb-4">
@@ -291,16 +339,12 @@ function MockInterview() {
             </div>
           </div>
 
-          <div className="p-3 sm:p-4 rounded-xl border border-dashed border-slate-700 text-center">
-            {phase === "reading" ? (
-              <p className="text-xs sm:text-sm text-slate-400 font-medium">
-                Read carefully. Recording starts automatically in {timeLeft} seconds.
-              </p>
-            ) : (
-              <p className="text-xs sm:text-sm text-emerald-400 font-semibold">
-                Your response is being tracked for fluency and pauses. Speak clearly!
-              </p>
-            )}
+          {/* Live Transcript Feedback Box */}
+          <div className="p-3 sm:p-4 rounded-xl border border-slate-700 bg-slate-900/50 max-h-36 overflow-y-auto">
+            <p className="text-xs text-slate-400 font-semibold mb-1">Your Spoken Answer (Live):</p>
+            <p className="text-sm text-emerald-300 italic whitespace-pre-wrap">
+              {currentTranscript ? currentTranscript : "(Listening... speak your answer clearly)"}
+            </p>
           </div>
 
           <div className="flex justify-center pt-2">
@@ -318,7 +362,6 @@ function MockInterview() {
           </div>
         </div>
 
-        {/* Right Side: Webcam Video Feed */}
         <div className="flex flex-col items-center justify-center bg-slate-950 rounded-xl p-3 sm:p-4 border border-slate-800 relative overflow-hidden h-[300px] sm:min-h-[400px] order-1 lg:order-2">
           <video
             ref={videoRef}

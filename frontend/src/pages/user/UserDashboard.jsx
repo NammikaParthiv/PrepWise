@@ -6,62 +6,64 @@ import notesImg from "../../assets/notes.png";
 import { useNavigate } from "react-router-dom";
 
 function HomePage() {
-
   return (
-    <div className="min-h-screen transition-all duration-500 bg-linear-to-br from-blue-50 via-white to-indigo-100 dark:from-slate-900 dark:via-indigo-950 dark:to-slate-900">
-      <div className="px-35 pt-12">
-        <div className="pt-28 pb-18 px-10 text-center border-4 rounded-4xl m-10 shadow-2xl border-blue-500 bg-amber-100 dark:border-green-500 dark:bg-indigo-800">
-          <h1 className="text-8xl font-extrabold text-slate-900 dark:text-white">
-            Prep<span className="text-blue-400">Wise</span>
+    <div className="min-h-screen transition-all duration-500 bg-linear-to-br from-blue-50 via-white to-indigo-100 dark:from-slate-900 dark:via-indigo-950 dark:to-slate-900 overflow-x-hidden">
+      <div className="px-4 sm:px-8 lg:px-16 pt-8 sm:pt-12 max-w-7xl mx-auto">
+        
+        {/* Hero Banner Section */}
+        <div className="pt-12 pb-10 sm:pt-28 sm:pb-18 px-6 sm:px-10 text-center border-2 sm:border-4 rounded-3xl sm:rounded-4xl my-6 sm:my-10 shadow-2xl border-blue-500 bg-amber-100 dark:border-green-500 dark:bg-indigo-800">
+          <h1 className="text-5xl sm:text-7xl lg:text-8xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            Prep<span className="text-blue-500 dark:text-blue-400">Wise</span>
           </h1>
 
-          <p className="text-3xl font-semibold mt-6 text-blue-700 dark:text-blue-200">
+          <p className="text-xl sm:text-3xl font-semibold mt-4 sm:mt-6 text-blue-700 dark:text-blue-200">
             AI-Powered Interview Preparation Platform
           </p>
 
-          <p className="text-lg max-w-4xl mx-auto mt-6 leading-relaxed text-gray-700 dark:text-gray-300">
+          <p className="text-sm sm:text-lg max-w-4xl mx-auto mt-4 sm:mt-6 leading-relaxed text-gray-700 dark:text-gray-300">
             Analyze resumes, practice interviews, organize your preparation
             journey and track your progress — all in one place.
           </p>
         </div>
 
-        <div className="px-10 pb-20">
-          <h2 className="text-5xl font-bold text-center mb-16 text-slate-900 dark:text-white">
+        {/* Features Section */}
+        <div className="px-2 sm:px-6 pb-16 sm:pb-20">
+          <h2 className="text-3xl sm:text-5xl font-bold text-center mb-10 sm:mb-16 text-slate-900 dark:text-white">
             Explore Features
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-50 gap-y-20 justify-items-center">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 sm:gap-12 justify-items-center">
             <FeatureCard
               color="from-rose-400 to-rose-600"
-              heading="📑Resume Analyzer"
+              heading="📑 Resume Analyzer"
               description="AI-powered feedback to improve resume quality and ATS compatibility."
               image={resumeImg}
               link="/u/resume_analyser"
             />
             <FeatureCard
               color="from-indigo-400 to-blue-600"
-              heading="🗣️Mock Interview"
+              heading="🗣️ Mock Interview"
               description="Practice realistic interviews with AI evaluation and scoring."
               image={interviewImg}
               link="/u/interview_simulator"
             />
             <FeatureCard
               color="from-orange-400 to-amber-600"
-              heading="🎯Study Planner"
+              heading="🎯 Study Planner"
               description="Organize preparation goals and stay consistent every day."
               image={studyPlannerImg}
               link="/u/study_planner"
             />
             <FeatureCard
               color="from-emerald-400 to-green-600"
-              heading="📝Notes"
+              heading="📝 Notes"
               description="Store important concepts, revision notes and resources."
               image={notesImg}
               link="/u/references"
             />
             <FeatureCard
               color="from-yellow-400 to-yellow-600"
-              heading="🕒History"
+              heading="🕒 History"
               description="Track previous analyses and interview performance."
               image={historyImg}
               link="/u/history"
@@ -69,14 +71,16 @@ function HomePage() {
           </div>
         </div>
 
-        <div className="text-center py-20">
-          <h2 className="text-5xl font-bold text-slate-900 dark:text-white">
+        {/* Footer Tagline */}
+        <div className="text-center py-12 sm:py-20">
+          <h2 className="text-3xl sm:text-5xl font-bold text-slate-900 dark:text-white">
             Your Journey Starts Here
           </h2>
-          <p className="mt-5 text-xl text-gray-700 dark:text-gray-300">
+          <p className="mt-4 sm:mt-5 text-base sm:text-xl text-gray-700 dark:text-gray-300 font-medium">
             • Analyze • Practice • Improve • Get Hired •
           </p>
         </div>
+
       </div>
     </div>
   );
@@ -90,9 +94,9 @@ function FeatureCard({ color, heading, description, image, link }) {
   return (
     <div
       onClick={() => navigate(link)}
-      className="group w-100 bg-white rounded-3xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl hover:-translate-y-3 transition-all duration-300 border-2"
+      className="group w-full max-w-sm sm:w-80 md:w-96 bg-white dark:bg-slate-800 rounded-3xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 border-2 border-gray-200 dark:border-slate-700"
     >
-      <div className="h-56 overflow-hidden">
+      <div className="h-48 sm:h-56 overflow-hidden">
         <img
           src={image}
           alt={heading}
@@ -100,9 +104,11 @@ function FeatureCard({ color, heading, description, image, link }) {
         />
       </div>
 
-      <div className={`bg-linear-to-r ${color} p-6 h-40 flex flex-col justify-center`}>
-        <h2 className="text-4xl font-bold text-black mb-3 text-center">{heading}</h2>
-        <p className="text-white text-center text-sm leading-relaxed">{description}</p>
+      <div className={`bg-linear-to-r ${color} p-6 h-40 flex flex-col justify-center text-slate-900`}>
+        <h2 className="text-2xl sm:text-3xl font-bold mb-2 text-center">{heading}</h2>
+        <p className="text-white text-center text-xs sm:text-sm leading-relaxed font-medium">
+          {description}
+        </p>
       </div>
     </div>
   );
