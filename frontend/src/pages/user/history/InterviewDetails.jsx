@@ -23,20 +23,37 @@ function InterviewDetails() {
   const [interview, setInterview] = useState(null);
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchInterviewData = async () => {
+      if (!id) {
+        if (isMounted) {
+          setLoading(false);
+        }
+        return;
+      }
+
       try {
-        setLoading(true);
         const res = await axios.get(`/api/interview/${id}`);
-        if (res.data.interview) {
+        if (isMounted && res.data.interview) {
           setInterview(res.data.interview);
         }
       } catch {
-        alert("Failed to load interview details.");
+        if (isMounted) {
+          setInterview(null);
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
-    if (id) fetchInterviewData();
+
+    fetchInterviewData();
+
+    return () => {
+      isMounted = false;
+    };
   }, [id]);
 
   if (loading) {

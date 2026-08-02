@@ -3,6 +3,20 @@ import { useNavigate, useLocation } from "react-router-dom";
 import axios from "../../../utils/axios.js";
 
 function MockInterview() {
+  // TEMP DEBUG — remove once you've confirmed the fix in your own devtools.
+  // Open the browser console and watch for these tags while doing a full
+  // question cycle. You should see:
+  //   [MockInterview] recognition.start() called   -> exactly ONCE per question
+  //     (unless Chrome itself times out mid-answer, which is a browser-level
+  //      restart, not a bug — you'll see the log fire again if that happens)
+  //   [MockInterview] nextQuestion() invoked        -> exactly ONCE per question
+  //   [MockInterview] nextQuestion() GUARDED        -> should NEVER appear;
+  //     if it does, it means a double-call was attempted and successfully
+  //     blocked (which is fine), but tells you something upstream is still
+  //     re-triggering more than expected.
+  const DEBUG = true;
+  const log = (...args) => DEBUG && console.log("[MockInterview]", ...args);
+
   const navigate = useNavigate();
   const location = useLocation();
   const [queNo, setQueNo] = useState(1);
@@ -61,9 +75,7 @@ function MockInterview() {
       if (recognitionRef.current) {
         try {
           recognitionRef.current.stop();
-        } catch (error) {
-          console.log("Error stopping recognition on unmount:", error);
-        }
+        } catch (e) {}
       }
     };
   }, []);
@@ -131,16 +143,15 @@ function MockInterview() {
         // immediately so we never lose speech mid-answer.
         try {
           recognition.start();
-        } catch (error) {
-          console.error("Error restarting speech recognition:", error);
+          log("recognition.start() called — RESTART (Chrome ended the previous session on its own, not a code bug)");
+        } catch (e) {
           // Rapid restart got throttled — retry shortly.
           setTimeout(() => {
             if (isAnsweringRef.current && recognitionRef.current && !isRecognitionRunningRef.current) {
               try {
                 recognitionRef.current.start();
-              } catch (error) {
-                console.error("Failed to restart speech recognition after throttling:", error);
-              }
+                log("recognition.start() called — delayed RESTART");
+              } catch (err) {}
             }
           }, 300);
         }
@@ -154,6 +165,7 @@ function MockInterview() {
 
     try {
       recognition.start();
+      log("recognition.start() called");
     } catch (err) {
       console.error("Failed to start speech recognition instance:", err);
     }
@@ -169,8 +181,7 @@ function MockInterview() {
         stopResolverRef.current = resolve;
         try {
           recognitionRef.current.stop();
-        } catch (error) {
-          console.log("Error stopping recognition:", error);
+        } catch (e) {
           stopResolverRef.current = null;
           resolve();
         }
@@ -221,8 +232,7 @@ function MockInterview() {
       };
       try {
         mediaRecorder.stop();
-      } catch (err) {
-        console.log(err);
+      } catch (e) {
         resolve(null);
       }
     });
@@ -266,58 +276,92 @@ function MockInterview() {
     [stream, interview, navigate]
   );
 
+  // Guards against nextQuestion running twice concurrently for the same
+  // question — belt-and-suspenders on top of the effect fix below.
+  const isAdvancingRef = useRef(false);
+
   const nextQuestion = useCallback(async () => {
-    let videoBlob = null;
-    let finalAnswerText = "";
-
-    if (phase === "answering") {
-      videoBlob = await stopRecordingHelper();
-      // Recognition has now fully stopped and flushed its last result into
-      // accumulatedTranscriptRef — safe to read it here.
-      finalAnswerText = accumulatedTranscriptRef.current.trim();
+    if (isAdvancingRef.current) {
+      log("nextQuestion() GUARDED — a duplicate call was blocked");
+      return;
     }
+    isAdvancingRef.current = true;
+    log("nextQuestion() invoked");
 
-    const updatedAnswers = [...allAnswers];
-    updatedAnswers[queNo - 1] = {
-      question: questions[queNo - 1]?.question || "",
-      transcript: finalAnswerText || "[No clear speech detected]",
-      longPausesDetected: 0,
-      videoBlob: videoBlob,
-    };
-    setAllAnswers(updatedAnswers);
+    try {
+      let videoBlob = null;
+      let finalAnswerText = "";
 
-    // Reset transcript storage for the next question
-    accumulatedTranscriptRef.current = "";
-    setCurrentTranscript("");
+      if (phase === "answering") {
+        videoBlob = await stopRecordingHelper();
+        // Recognition has now fully stopped and flushed its last result into
+        // accumulatedTranscriptRef — safe to read it here.
+        finalAnswerText = accumulatedTranscriptRef.current.trim();
+      }
 
-    if (queNo < questions.length) {
-      setQueNo((prev) => prev + 1);
-      setPhase("reading");
-      setTimeLeft(30);
-    } else {
-      completeInterview(updatedAnswers);
+      const updatedAnswers = [...allAnswers];
+      updatedAnswers[queNo - 1] = {
+        question: questions[queNo - 1]?.question || "",
+        transcript: finalAnswerText || "[No clear speech detected]",
+        longPausesDetected: 0,
+        videoBlob: videoBlob,
+      };
+      setAllAnswers(updatedAnswers);
+
+      // Reset transcript storage for the next question
+      accumulatedTranscriptRef.current = "";
+      setCurrentTranscript("");
+
+      if (queNo < questions.length) {
+        setQueNo((prev) => prev + 1);
+        setPhase("reading");
+        setTimeLeft(30);
+        isAdvancingRef.current = false; // free the guard for the next question
+      } else {
+        await completeInterview(updatedAnswers);
+        isAdvancingRef.current = false;
+      }
+    } catch (e) {
+      isAdvancingRef.current = false;
+      throw e;
     }
   }, [phase, allAnswers, queNo, questions, stopRecordingHelper, completeInterview]);
 
-  // Main Timer Effect
+  // Keep refs pointed at the latest versions of these callbacks WITHOUT making
+  // the timer effect depend on them directly. nextQuestion's identity changes
+  // every time allAnswers/queNo update (it closes over them) — if the timer
+  // effect depended on nextQuestion itself, that identity change alone would
+  // re-trigger the effect even though timeLeft/phase hadn't actually changed,
+  // causing nextQuestion (and therefore submission) to fire twice. Same logic
+  // applies to startRecording, to avoid ever double-starting recognition.
+  const nextQuestionRef = useRef(nextQuestion);
+  useEffect(() => {
+    nextQuestionRef.current = nextQuestion;
+  }, [nextQuestion]);
+
+  const startRecordingRef = useRef(startRecording);
+  useEffect(() => {
+    startRecordingRef.current = startRecording;
+  }, [startRecording]);
+
+  // Main Timer Effect — depends ONLY on values that should genuinely restart
+  // the countdown or trigger a phase transition.
   useEffect(() => {
     if (timeLeft > 0) {
       const timer = setTimeout(() => {
         setTimeLeft((prev) => prev - 1);
       }, 1000);
       return () => clearTimeout(timer);
-    } else {
-      queueMicrotask(() => {
-        if (phase === "reading") {
-          setPhase("answering");
-          setTimeLeft(120);
-          startRecording();
-        } else if (phase === "answering") {
-          nextQuestion();
-        }
-      });
     }
-  }, [timeLeft, phase, startRecording, nextQuestion]);
+
+    if (phase === "reading") {
+      setPhase("answering");
+      setTimeLeft(120);
+      startRecordingRef.current();
+    } else if (phase === "answering") {
+      nextQuestionRef.current();
+    }
+  }, [timeLeft, phase]);
 
   if (!interview) {
     navigate("/u/interview_simulator");
@@ -330,9 +374,7 @@ function MockInterview() {
       if (recognitionRef.current) {
         try {
           recognitionRef.current.stop();
-        } catch (err) {
-          console.log(err);
-        }
+        } catch (e) {}
       }
       if (stream) {
         stream.getTracks().forEach((track) => track.stop());
@@ -427,8 +469,8 @@ function MockInterview() {
 
           <div className="flex justify-center pt-2">
             <button
-              onClick={nextQuestion}
-              disabled={phase === "reading"}
+              onClick={() => nextQuestion()}
+              disabled={phase === "reading" || isAdvancingRef.current}
               className={`w-full text-white text-lg sm:text-xl py-3.5 sm:py-4 rounded-xl font-bold transition-all duration-300 shadow-lg ${
                 phase === "reading"
                   ? "bg-slate-700 opacity-50 cursor-not-allowed"

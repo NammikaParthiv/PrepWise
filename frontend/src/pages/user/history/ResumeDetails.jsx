@@ -28,24 +28,46 @@ function ResumeDetails() {
   const [resume, setResume] = useState(null);
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchResume = async () => {
+      if (!id) {
+        if (isMounted) {
+          setLoading(false);
+        }
+        return;
+      }
+
       try {
         const res = await axios.get(`/api/resume_analyser/resume_history`);
         const targetReport = res.data?.resumes?.find((r) => r._id === id);
 
         if (targetReport) {
-          setResume(targetReport);
+          if (isMounted) {
+            setResume(targetReport);
+          }
         } else {
           const directRes = await axios.get(`/api/resume/${id}`);
-          setResume(directRes.data.resume);
+          if (isMounted) {
+            setResume(directRes.data.resume);
+          }
         }
       } catch {
-        alert("Unable to fetch report");
+        if (isMounted) {
+          setResume(null);
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
+
     fetchResume();
+
+    return () => {
+      isMounted = false;
+    };
   }, [id]);
 
   if (loading) {
@@ -107,7 +129,9 @@ function ResumeDetails() {
               </div>
             </div>
           </div>
-        </div>        <div className="grid grid-cols-1 gap-8">
+        </div>
+
+        <div className="grid grid-cols-1 gap-8">
           <div className="bg-white dark:bg-slate-800 rounded-[28px] p-8 shadow-xs border border-gray-100 dark:border-gray-700">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2.5 bg-green-50 dark:bg-green-900 rounded-xl border border-green-100 dark:border-green-700">
