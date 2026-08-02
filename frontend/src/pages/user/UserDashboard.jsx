@@ -10,7 +10,6 @@ function HomePage() {
     <div className="min-h-screen transition-all duration-500 bg-linear-to-br from-blue-50 via-white to-indigo-100 dark:from-slate-900 dark:via-indigo-950 dark:to-slate-900 overflow-x-hidden">
       <div className="px-4 sm:px-8 lg:px-16 pt-8 sm:pt-12 max-w-7xl mx-auto">
         
-        {/* Hero Banner Section */}
         <div className="pt-12 pb-10 sm:pt-28 sm:pb-18 px-6 sm:px-10 text-center border-2 sm:border-4 rounded-3xl sm:rounded-4xl my-6 sm:my-10 shadow-2xl border-blue-500 bg-amber-100 dark:border-green-500 dark:bg-indigo-800">
           <h1 className="text-5xl sm:text-7xl lg:text-8xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             Prep<span className="text-blue-500 dark:text-blue-400">Wise</span>
@@ -26,13 +25,12 @@ function HomePage() {
           </p>
         </div>
 
-        {/* Features Section */}
         <div className="px-2 sm:px-6 pb-16 sm:pb-20">
           <h2 className="text-3xl sm:text-5xl font-bold text-center mb-10 sm:mb-16 text-slate-900 dark:text-white">
             Explore Features
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 sm:gap-12 justify-items-center">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-y-16 gap-x-60 justify-items-center justify-center max-w-6xl mx-auto">
             <FeatureCard
               color="from-rose-400 to-rose-600"
               heading="📑 Resume Analyzer"
@@ -71,7 +69,6 @@ function HomePage() {
           </div>
         </div>
 
-        {/* Footer Tagline */}
         <div className="text-center py-12 sm:py-20">
           <h2 className="text-3xl sm:text-5xl font-bold text-slate-900 dark:text-white">
             Your Journey Starts Here

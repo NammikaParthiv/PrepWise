@@ -21,20 +21,20 @@ const AdminStatistics = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-indigo-100 dark:from-slate-900 dark:via-indigo-950 dark:to-slate-900 flex flex-col text-slate-900 dark:text-slate-100">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-indigo-100 dark:from-slate-900 dark:via-indigo-950 dark:to-slate-900 flex flex-col text-slate-900 dark:text-slate-100 overflow-x-hidden">
       
-      <main className="flex-1 flex flex-col max-w-7xl w-full mx-auto px-6 sm:px-8 lg:px-12 py-12 gap-12">
+      <main className="flex-1 flex flex-col max-w-7xl w-full mx-auto px-4 sm:px-8 lg:px-12 py-8 sm:py-12 gap-8 sm:gap-12">
         
-        <div className="rounded-3xl border-4 border-indigo-500 bg-amber-100 dark:border-green-500 dark:bg-indigo-800 py-16 px-10 sm:px-16 shadow-2xl text-center">
-          <h1 className="text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+        <div className="rounded-3xl border-2 sm:border-4 border-indigo-500 bg-amber-100 dark:border-green-500 dark:bg-indigo-800 py-10 sm:py-16 px-6 sm:px-16 shadow-2xl text-center">
+          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white">
             📊 <span className="text-blue-500">PrepWise</span> Statistics
           </h1>
-          <p className="mt-5 text-lg text-gray-700 dark:text-gray-300 max-w-2xl mx-auto">
+          <p className="mt-4 sm:mt-5 text-sm sm:text-lg text-gray-700 dark:text-gray-300 max-w-2xl mx-auto">
             Real-time analytics of resumes, interviews, and user activity.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-10">
           {[
             { icon: "📄", label: "Resumes Analyzed", value: stats.resumesAnalysed, color: "from-indigo-400 to-blue-600" },
             { icon: "🎙️", label: "Interviews Taken", value: stats.interviewsTaken, color: "from-purple-400 to-pink-600" },
@@ -42,15 +42,15 @@ const AdminStatistics = () => {
           ].map((stat, idx) => (
             <div
               key={idx}
-              className={`group flex flex-col justify-center items-center p-10 rounded-3xl border-2 border-gray-200 dark:border-gray-700 shadow-lg bg-linear-to-br ${stat.color} transition-all duration-500 hover:scale-105 hover:shadow-2xl`}
+              className={`group flex flex-col justify-center items-center p-8 sm:p-10 rounded-3xl border-2 border-gray-200 dark:border-gray-700 shadow-lg bg-linear-to-br ${stat.color} transition-all duration-500 hover:scale-105 hover:shadow-2xl`}
             >
-              <div className="text-6xl mb-4 select-none drop-shadow-md">
+              <div className="text-5xl sm:text-6xl mb-4 select-none drop-shadow-md">
                 {stat.icon}
               </div>
-              <h3 className="text-lg font-bold text-white uppercase tracking-widest">
+              <h3 className="text-sm sm:text-lg font-bold text-white uppercase tracking-widest text-center">
                 {stat.label}
               </h3>
-              <span className="mt-3 text-4xl font-black text-white tracking-tight group-hover:text-yellow-200 transition-colors duration-300">
+              <span className="mt-3 text-3xl sm:text-4xl font-black text-white tracking-tight group-hover:text-yellow-200 transition-colors duration-300">
                 {stat.value.toLocaleString()}
               </span>
             </div>
