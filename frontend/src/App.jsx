@@ -4,7 +4,8 @@ import Register from "./pages/Register";
 import Login from "./pages/Login";
 import NavBar from "./pages/layouts/NavBar";
 import ResumeAnalyser from "./pages/user/ResmueAnalyser";
-import MockInterview from "./pages/user/MockInterview/MockInterview";
+import VMockInterview from "./pages/user/MockInterview/V-MockInterview";
+import RMockInterview from "./pages/user/MockInterview/R-MockInterview";
 import History from "./pages/user/history/History";
 import ResumeDetials from "./pages/user/history/ResumeDetails";
 import Profile from "./pages/Profile";
@@ -61,8 +62,12 @@ function App() {
             element={<InterviewSimulator />}
           />
           <Route
-            path="/u/interview_simulator/session"
-            element={<MockInterview />}
+            path="/u/interview_simulator/v-session"
+            element={<VMockInterview />}
+          />
+          <Route
+            path="/u/interview_simulator/w-session"
+            element={<RMockInterview />}
           />
           <Route path="/u/references" element={<References />} />
           <Route path="/u/history" element={<History />} />

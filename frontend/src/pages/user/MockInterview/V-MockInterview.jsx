@@ -3,17 +3,14 @@ import { useNavigate, useLocation } from "react-router-dom";
 import axios from "../../../utils/axios.js";
 
 function MockInterview() {
-  // TEMP DEBUG — remove once you've confirmed the fix in your own devtools.
-  // Open the browser console and watch for these tags while doing a full
-  // question cycle. You should see:
-  //   [MockInterview] recognition.start() called   -> exactly ONCE per question
-  //     (unless Chrome itself times out mid-answer, which is a browser-level
-  //      restart, not a bug — you'll see the log fire again if that happens)
-  //   [MockInterview] nextQuestion() invoked        -> exactly ONCE per question
-  //   [MockInterview] nextQuestion() GUARDED        -> should NEVER appear;
-  //     if it does, it means a double-call was attempted and successfully
-  //     blocked (which is fine), but tells you something upstream is still
-  //     re-triggering more than expected.
+  // TEMP DEBUG — watch your browser console while doing one full answer.
+  // "recognition.start() called" should appear once, then only occasionally
+  // again (seconds/tens-of-seconds apart) if Chrome naturally restarts after
+  // a pause — that's expected Chrome behavior, not a bug (confirmed by
+  // Chromium's own engineers, not fixable in JS).
+  // If instead you see it firing every ~1-2 seconds in a tight burst, that's
+  // a REAL bug (mic contention, permissions issue, etc.) — send me that
+  // console output and I'll trace the actual cause instead of guessing.
   const DEBUG = true;
   const log = (...args) => DEBUG && console.log("[MockInterview]", ...args);
 
@@ -28,29 +25,29 @@ function MockInterview() {
   const [phase, setPhase] = useState("reading");
   const [timeLeft, setTimeLeft] = useState(30);
 
-  // Transcription State & Refs
+  // Live transcript, produced by the browser's own speech engine — free,
+  // zero tokens, no server round trip.
   const [currentTranscript, setCurrentTranscript] = useState("");
-  const accumulatedTranscriptRef = useRef(""); // Everything said across auto-restarts, for THIS question
+  const accumulatedTranscriptRef = useRef(""); // finalized text for THIS question
   const recognitionRef = useRef(null);
   const videoRef = useRef(null);
-  const mediaRecorderRef = useRef(null);
-  const recordedChunksRef = useRef([]);
   const [stream, setStream] = useState(null);
 
-  // isAnsweringRef: true while we WANT recognition running (intentional restarts allowed).
-  // Setting it false is how we signal "stop for real" to the onend handler.
+  // true while we WANT recognition running; flipping it to false is how we
+  // signal "stop for real" (vs. Chrome auto-ending a session on its own).
   const isAnsweringRef = useRef(false);
-  // Resolves the in-flight stopSpeechRecognition() promise once onend fires
-  // AFTER isAnsweringRef has been flipped to false (i.e. a real, final stop).
+  // Resolves stopSpeechRecognition()'s promise once onend confirms a REAL stop.
   const stopResolverRef = useRef(null);
-  // Guards against calling recognition.start() while an instance is still active,
-  // which throws "already started" and can desync the restart loop.
+  // Prevents calling .start() while an instance is already active.
   const isRecognitionRunningRef = useRef(false);
+  // Prevents nextQuestion from running twice concurrently for one question.
+  const isAdvancingRef = useRef(false);
 
   const interview = location.state?.interview;
   const questions = interview?.questions || [];
 
-  // 1. Initialize Webcam & Microphone on mount
+  // 1. Webcam + mic (video is shown live for the candidate; no video upload
+  // is needed anymore since transcription happens client-side).
   useEffect(() => {
     let mediaStream = null;
     async function setupCamera() {
@@ -80,12 +77,13 @@ function MockInterview() {
     };
   }, []);
 
-  // 2. Speech Recognition Engine — restarts through pauses/silence, stops only
-  // when explicitly told to via stopSpeechRecognition().
+  // 2. Speech Recognition — runs continuously through the whole answer,
+  // restarting itself if Chrome ends a session early (e.g. after a pause),
+  // so no speech is lost mid-answer.
   const startSpeechRecognition = useCallback(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      console.warn("Speech Recognition API not supported in this browser. Use Chrome, or fall back to server-side transcription.");
+      console.warn("Speech Recognition not supported in this browser — use Chrome or Edge.");
       return;
     }
 
@@ -117,14 +115,10 @@ function MockInterview() {
       if (newFinalText) {
         accumulatedTranscriptRef.current += newFinalText;
       }
-
-      // Show everything finalized so far + whatever is being said live right now
       setCurrentTranscript(accumulatedTranscriptRef.current + interimText);
     };
 
     recognition.onerror = (event) => {
-      // "no-speech" fires often during natural pauses — harmless, recognition
-      // will auto-restart via onend below. These are the genuinely fatal ones:
       const fatalErrors = ["not-allowed", "audio-capture", "service-not-allowed"];
       if (fatalErrors.includes(event.error)) {
         console.error("Fatal speech recognition error, stopping restarts:", event.error);
@@ -132,31 +126,28 @@ function MockInterview() {
       } else if (event.error !== "no-speech" && event.error !== "aborted") {
         console.warn("Speech recognition warning:", event.error);
       }
+      log("onerror fired:", event.error);
     };
 
     recognition.onend = () => {
       isRecognitionRunningRef.current = false;
+      log("onend fired");
 
       if (isAnsweringRef.current) {
-        // Not an intentional stop — browser timed the session out (common after
-        // ~60s of silence in some Chrome builds) or auto-restarted. Bring it back
-        // immediately so we never lose speech mid-answer.
         try {
           recognition.start();
-          log("recognition.start() called — RESTART (Chrome ended the previous session on its own, not a code bug)");
+          log("recognition.start() called (RESTART — Chrome ended the session on its own)");
         } catch (e) {
-          // Rapid restart got throttled — retry shortly.
           setTimeout(() => {
             if (isAnsweringRef.current && recognitionRef.current && !isRecognitionRunningRef.current) {
               try {
                 recognitionRef.current.start();
-                log("recognition.start() called — delayed RESTART");
+                log("recognition.start() called (delayed RESTART)");
               } catch (err) {}
             }
           }, 300);
         }
       } else if (stopResolverRef.current) {
-        // This is a real, final stop — the transcript is now guaranteed complete.
         const resolve = stopResolverRef.current;
         stopResolverRef.current = null;
         resolve();
@@ -165,14 +156,15 @@ function MockInterview() {
 
     try {
       recognition.start();
-      log("recognition.start() called");
+      log("recognition.start() called (initial)");
     } catch (err) {
       console.error("Failed to start speech recognition instance:", err);
     }
   }, []);
 
-  // Stops recognition and resolves only once onend confirms it actually ended —
-  // so callers never read the transcript before the last words are finalized.
+  // Resolves only once onend confirms recognition has fully, finally
+  // stopped — so callers never read the transcript before the last words
+  // are finalized.
   const stopSpeechRecognition = useCallback(() => {
     return new Promise((resolve) => {
       isAnsweringRef.current = false;
@@ -192,51 +184,47 @@ function MockInterview() {
   }, []);
 
   const startRecording = useCallback(() => {
-    recordedChunksRef.current = [];
     accumulatedTranscriptRef.current = "";
     setCurrentTranscript("");
+    startSpeechRecognition();
+  }, [startSpeechRecognition]);
 
-    if (!stream) return;
+  const nextQuestion = useCallback(async () => {
+    if (isAdvancingRef.current) return;
+    isAdvancingRef.current = true;
 
     try {
-      const mediaRecorder = new MediaRecorder(stream, { mimeType: "video/webm" });
-      mediaRecorderRef.current = mediaRecorder;
-
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data && event.data.size > 0) {
-          recordedChunksRef.current.push(event.data);
-        }
-      };
-
-      mediaRecorder.start(1000);
-      startSpeechRecognition();
-    } catch (error) {
-      console.error("Error starting media recorder:", error);
-    }
-  }, [stream, startSpeechRecognition]);
-
-  const stopRecordingHelper = useCallback(async () => {
-    // Wait for recognition to fully, finally stop BEFORE touching the transcript
-    // or stopping the video — this is what fixes the empty/truncated answers.
-    await stopSpeechRecognition();
-
-    const mediaRecorder = mediaRecorderRef.current;
-    if (!mediaRecorder || mediaRecorder.state === "inactive") {
-      return null;
-    }
-
-    return new Promise((resolve) => {
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(recordedChunksRef.current, { type: "video/webm" });
-        resolve(blob);
-      };
-      try {
-        mediaRecorder.stop();
-      } catch (e) {
-        resolve(null);
+      let finalAnswerText = "";
+      if (phase === "answering") {
+        await stopSpeechRecognition(); // wait for the last words to finalize
+        finalAnswerText = accumulatedTranscriptRef.current.trim();
       }
-    });
-  }, [stopSpeechRecognition]);
+
+      const updatedAnswers = [...allAnswers];
+      updatedAnswers[queNo - 1] = {
+        question: questions[queNo - 1]?.question || "",
+        answer: finalAnswerText || "[No clear speech detected]",
+      };
+      setAllAnswers(updatedAnswers);
+
+      accumulatedTranscriptRef.current = "";
+      setCurrentTranscript("");
+
+      if (queNo < questions.length) {
+        setQueNo((prev) => prev + 1);
+        setPhase("reading");
+        setTimeLeft(30);
+        isAdvancingRef.current = false;
+      } else {
+        await completeInterview(updatedAnswers);
+        isAdvancingRef.current = false;
+      }
+    } catch (e) {
+      isAdvancingRef.current = false;
+      throw e;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, allAnswers, queNo, questions, stopSpeechRecognition]);
 
   const completeInterview = useCallback(
     async (finalAnswers) => {
@@ -245,22 +233,12 @@ function MockInterview() {
         stream.getTracks().forEach((track) => track.stop());
       }
       try {
-        // videoBlob objects can't survive JSON.stringify (a Blob serializes to
-        // "{}"), so this must go as multipart/form-data, not a JSON body.
-        const formData = new FormData();
-        formData.append("interviewId", interview._id);
-
-        finalAnswers.forEach((answer, index) => {
-          formData.append(`answers[${index}][question]`, answer.question);
-          formData.append(`answers[${index}][transcript]`, answer.transcript);
-          formData.append(`answers[${index}][longPausesDetected]`, answer.longPausesDetected);
-          if (answer.videoBlob) {
-            formData.append(`answers[${index}][video]`, answer.videoBlob, `question_${index + 1}.webm`);
-          }
-        });
-
-        const res = await axios.post("/api/interview/submit", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
+        // Plain JSON — matches your existing backend exactly, no changes
+        // needed there. Transcription already happened client-side, so
+        // there's no video to upload and no waiting on Gemini for text.
+        const res = await axios.post("/api/interview/submit", {
+          interviewId: interview._id,
+          answers: finalAnswers.map((a) => ({ answer: a.answer })),
         });
 
         navigate("/u/interview_simulator/result", {
@@ -276,64 +254,10 @@ function MockInterview() {
     [stream, interview, navigate]
   );
 
-  // Guards against nextQuestion running twice concurrently for the same
-  // question — belt-and-suspenders on top of the effect fix below.
-  const isAdvancingRef = useRef(false);
-
-  const nextQuestion = useCallback(async () => {
-    if (isAdvancingRef.current) {
-      log("nextQuestion() GUARDED — a duplicate call was blocked");
-      return;
-    }
-    isAdvancingRef.current = true;
-    log("nextQuestion() invoked");
-
-    try {
-      let videoBlob = null;
-      let finalAnswerText = "";
-
-      if (phase === "answering") {
-        videoBlob = await stopRecordingHelper();
-        // Recognition has now fully stopped and flushed its last result into
-        // accumulatedTranscriptRef — safe to read it here.
-        finalAnswerText = accumulatedTranscriptRef.current.trim();
-      }
-
-      const updatedAnswers = [...allAnswers];
-      updatedAnswers[queNo - 1] = {
-        question: questions[queNo - 1]?.question || "",
-        transcript: finalAnswerText || "[No clear speech detected]",
-        longPausesDetected: 0,
-        videoBlob: videoBlob,
-      };
-      setAllAnswers(updatedAnswers);
-
-      // Reset transcript storage for the next question
-      accumulatedTranscriptRef.current = "";
-      setCurrentTranscript("");
-
-      if (queNo < questions.length) {
-        setQueNo((prev) => prev + 1);
-        setPhase("reading");
-        setTimeLeft(30);
-        isAdvancingRef.current = false; // free the guard for the next question
-      } else {
-        await completeInterview(updatedAnswers);
-        isAdvancingRef.current = false;
-      }
-    } catch (e) {
-      isAdvancingRef.current = false;
-      throw e;
-    }
-  }, [phase, allAnswers, queNo, questions, stopRecordingHelper, completeInterview]);
-
-  // Keep refs pointed at the latest versions of these callbacks WITHOUT making
-  // the timer effect depend on them directly. nextQuestion's identity changes
-  // every time allAnswers/queNo update (it closes over them) — if the timer
-  // effect depended on nextQuestion itself, that identity change alone would
-  // re-trigger the effect even though timeLeft/phase hadn't actually changed,
-  // causing nextQuestion (and therefore submission) to fire twice. Same logic
-  // applies to startRecording, to avoid ever double-starting recognition.
+  // Refs so the timer effect never depends on nextQuestion/startRecording
+  // directly — their identity changes on almost every render (they close
+  // over allAnswers/queNo), and depending on them would re-run the effect
+  // and fire a duplicate call even when timeLeft/phase hadn't changed.
   const nextQuestionRef = useRef(nextQuestion);
   useEffect(() => {
     nextQuestionRef.current = nextQuestion;
@@ -459,7 +383,6 @@ function MockInterview() {
             </div>
           </div>
 
-          {/* Live Transcript Feedback Box */}
           <div className="p-3 sm:p-4 rounded-xl border border-slate-700 bg-slate-900/50 max-h-36 overflow-y-auto">
             <p className="text-xs text-slate-400 font-semibold mb-1">Your Spoken Answer (Live):</p>
             <p className="text-sm text-emerald-300 italic whitespace-pre-wrap">
@@ -470,7 +393,7 @@ function MockInterview() {
           <div className="flex justify-center pt-2">
             <button
               onClick={() => nextQuestion()}
-              disabled={phase === "reading" || isAdvancingRef.current}
+              disabled={phase === "reading"}
               className={`w-full text-white text-lg sm:text-xl py-3.5 sm:py-4 rounded-xl font-bold transition-all duration-300 shadow-lg ${
                 phase === "reading"
                   ? "bg-slate-700 opacity-50 cursor-not-allowed"

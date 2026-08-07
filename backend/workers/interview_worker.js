@@ -12,7 +12,7 @@ const interviewWorker = new Worker(
     console.log(`Generating questions for ${job_role}`);
     console.log(job.data);
     try {
-      const prompt = `Generate 2 real-time company interview questions for graduating students from b.tech for the job-role:${job_role}.
+      const prompt = `Generate 1 real-time company interview questions for graduating students from b.tech for the job-role:${job_role}.
      Return only a valid json array as given in the below example:
      example:
       [

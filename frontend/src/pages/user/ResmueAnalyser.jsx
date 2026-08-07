@@ -1,13 +1,12 @@
 import axios from "../../utils/axios.js";
 import { useState } from "react";
+import { FaCloudUploadAlt, FaFilePdf, FaCheckCircle, FaExclamationTriangle, FaLightbulb, FaSpinner } from "react-icons/fa";
 
 function ResumeAnalyser() {
   const [resume, setResume] = useState(null);
   const [jobDesc, setJobDesc] = useState("");
   const [loading, setLoading] = useState(false);
-  const [uploadFiletext, setUploadFiletext] = useState(
-    "📄 Select Resume (PDF)",
-  );
+  const [uploadFiletext, setUploadFiletext] = useState("Select Resume (PDF)");
   const [analysisResult, setAnalysisResult] = useState(null);
 
   const handleSubmit = async () => {
@@ -35,63 +34,67 @@ function ResumeAnalyser() {
   };
 
   return (
-    <div className="min-h-screen pb-16 bg-linear-to-br from-amber-100 via-orange-50 to-yellow-100 dark:from-slate-900 dark:via-indigo-950 dark:to-slate-900">
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center pt-15">
-          <h1 className="text-6xl md:text-7xl font-black text-orange-900 dark:text-white tracking-tight">
+    <div className="min-h-screen pb-12 sm:pb-16 bg-gradient-to-br from-amber-50/70 via-orange-50/40 to-yellow-50/70 dark:from-slate-950 dark:via-indigo-950/40 dark:to-slate-950 px-4 sm:px-6">
+      {/* Changed max-w-4xl to max-w-6xl for a wider PC view, and pt-20/28 to pt-10/14 to reduce top gap */}
+      <div className="max-w-6xl mx-auto pt-10 sm:pt-14">
+        
+        {/* Header */}
+        <div className="text-center mb-8 sm:mb-12">
+          <span className="inline-block text-xs sm:text-sm font-extrabold uppercase tracking-wider text-orange-700 dark:text-orange-300 bg-orange-100 dark:bg-orange-950/80 px-3.5 py-1.5 rounded-full border border-orange-200 dark:border-orange-800/60 mb-3 shadow-xs">
+            AI Tool
+          </span>
+          <h1 className="text-3xl sm:text-6xl font-black text-slate-900 dark:text-white tracking-tight">
             Resume Analyzer
           </h1>
-          <p className="text-xl md:text-2xl text-gray-700 dark:text-gray-300 mt-4 font-medium">
-            An AI-powered resume evaluation tool
+          <p className="text-sm sm:text-xl text-slate-600 dark:text-slate-300 mt-2 font-medium">
+            AI-powered evaluation to match your resume with target jobs
           </p>
         </div>
 
-        <div className="w-full bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-orange-200 dark:border-gray-700 p-8 md:p-10 mb-12">
-          <h2 className="text-4xl font-extrabold text-center text-gray-800 dark:text-white mb-6">
+        {/* Main Card */}
+        <div className="bg-white dark:bg-slate-900/90 backdrop-blur-md rounded-2xl sm:rounded-3xl shadow-xl border border-orange-100 dark:border-slate-800 p-5 sm:p-10 mb-8 sm:mb-12">
+          <h2 className="text-xl sm:text-3xl font-black text-slate-900 dark:text-white mb-2 text-center">
             Resume Match Score
           </h2>
-
-          <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 text-center max-w-2xl mx-auto">
-            Upload your resume and compare it against a job description to
-            receive detailed AI-powered insights.
+          <p className="text-xs sm:text-base text-slate-500 dark:text-slate-400 mb-6 text-center max-w-xl mx-auto">
+            Upload your resume and paste the job description to receive deep insights and alignment scores.
           </p>
 
-          <div className="bg-orange-50 dark:bg-slate-700 border-l-8 border-orange-500 rounded-2xl p-6 mb-8">
-            <h3 className="text-xl font-bold text-orange-900 dark:text-orange-200 mb-2 flex items-center gap-2">
-              <span>🔔</span> Important Instructions
-            </h3>
-            <ul className="list-disc pl-6 space-y-2 text-md text-gray-700 dark:text-gray-300">
-              <li>Upload your resume only in PDF format.</li>
-              <li>Paste the complete job description.</li>
-              <li>
-                Longer and detailed job descriptions generally produce better
-                results.
-              </li>
+          {/* Instructions Box */}
+          <div className="bg-orange-50/80 dark:bg-slate-800/80 border-l-4 border-orange-500 rounded-xl p-4 sm:p-5 mb-6 text-xs sm:text-sm text-slate-700 dark:text-slate-300">
+            <span className="font-bold text-orange-900 dark:text-orange-200 block mb-1">💡 Quick Guidelines:</span>
+            <ul className="list-disc pl-5 space-y-1">
+              <li>Upload resume strictly in <strong className="font-semibold">PDF</strong> format.</li>
+              <li>Include the complete job role requirements for better accuracy.</li>
             </ul>
           </div>
 
-          <textarea
-  placeholder="Paste the complete Job Description here..."
-  value={jobDesc}
-  disabled={loading}
-  onChange={(e) => setJobDesc(e.target.value)}
-  className="w-full h-64 p-6 text-lg rounded-2xl border-2 border-orange-200 dark:border-gray-700 shadow-inner resize-none 
-             focus:outline-none focus:ring-4 focus:ring-orange-200 dark:focus:ring-indigo-700 
-             focus:border-orange-400 dark:focus:border-indigo-500 
-             transition disabled:bg-gray-50 dark:disabled:bg-slate-700 disabled:cursor-not-allowed
-             placeholder-gray-500 dark:placeholder-white"
-/>
+          {/* Job Description Textarea */}
+          <div className="mb-6">
+            <label className="block text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
+              Job Description
+            </label>
+            <textarea
+              placeholder="Paste the complete Job Description here..."
+              value={jobDesc}
+              disabled={loading}
+              onChange={(e) => setJobDesc(e.target.value)}
+              className="w-full h-44 sm:h-56 p-4 sm:p-5 text-sm sm:text-base rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 shadow-inner resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 transition disabled:opacity-60 disabled:cursor-not-allowed text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
+            />
+          </div>
 
-
-          <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center items-center">
+          {/* Actions Container */}
+          <div className="flex flex-col gap-3.5 sm:flex-row sm:gap-4 justify-between items-center">
+            {/* Upload File Button */}
             <label
-              className={`flex items-center justify-center h-16 w-full sm:w-80 border-2 border-dashed border-orange-400 dark:border-gray-600 rounded-2xl bg-linear-to-r from-orange-50 to-yellow-50 dark:from-slate-800 dark:to-slate-700 font-semibold text-lg transition ${
+              className={`flex items-center justify-center gap-2.5 h-14 w-full sm:w-auto sm:flex-1 border-2 border-dashed border-orange-300 dark:border-slate-700 rounded-xl sm:rounded-2xl bg-orange-50/40 dark:bg-slate-800/50 font-semibold text-xs sm:text-sm px-4 text-orange-900 dark:text-orange-200 transition ${
                 loading
                   ? "opacity-60 cursor-not-allowed"
-                  : "hover:bg-orange-100 dark:hover:bg-slate-600 cursor-pointer"
+                  : "hover:bg-orange-100/60 dark:hover:bg-slate-800 cursor-pointer"
               }`}
             >
-              {uploadFiletext}
+              <FaFilePdf className="text-orange-600 dark:text-orange-400 text-lg shrink-0" />
+              <span className="truncate">{uploadFiletext}</span>
               <input
                 type="file"
                 accept=".pdf"
@@ -100,86 +103,104 @@ function ResumeAnalyser() {
                 onChange={(e) => {
                   if (e.target.files?.[0]) {
                     setResume(e.target.files[0]);
-                    setUploadFiletext(`📄 ${e.target.files[0].name}`);
+                    setUploadFiletext(e.target.files[0].name);
                   }
                 }}
               />
             </label>
 
+            {/* Submit Button */}
             <button
               onClick={handleSubmit}
               disabled={loading}
-              className="w-full sm:w-auto py-4 px-10 text-xl font-bold rounded-full text-white bg-linear-to-r from-orange-500 via-orange-600 to-red-500 hover:scale-[1.02] hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed"
+              className="w-full sm:w-auto h-14 px-8 text-sm sm:text-base font-bold rounded-xl sm:rounded-2xl text-white bg-gradient-to-r from-orange-500 to-red-500 hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shrink-0"
             >
-              {loading ? "Analyzing Profile..." : "Analyze Now"}
+              {loading ? (
+                <>
+                  <FaSpinner className="animate-spin text-lg" />
+                  <span>Analyzing...</span>
+                </>
+              ) : (
+                <>
+                  <FaCloudUploadAlt className="text-lg" />
+                  <span>Analyze Now</span>
+                </>
+              )}
             </button>
           </div>
         </div>
 
-        {/* Loading skeleton */}
+        {/* Loading Skeleton */}
         {loading && (
-          <div className="w-full bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-orange-100 dark:border-gray-700 p-8 md:p-10 animate-pulse space-y-8">
-            <div className="h-40 bg-linear-to-r from-gray-200 to-gray-300 dark:from-slate-700 dark:to-slate-600 rounded-2xl flex flex-col items-center justify-center space-y-3">
-              <div className="h-6 w-48 bg-gray-400 dark:bg-slate-500 rounded"></div>
-              <div className="h-16 w-24 bg-gray-400 dark:bg-slate-500 rounded-xl"></div>
+          <div className="w-full bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 p-6 sm:p-10 animate-pulse space-y-6">
+            <div className="h-32 bg-slate-200 dark:bg-slate-800 rounded-xl flex flex-col items-center justify-center space-y-2">
+              <div className="h-4 w-32 bg-slate-300 dark:bg-slate-700 rounded"></div>
+              <div className="h-10 w-20 bg-slate-300 dark:bg-slate-700 rounded-lg"></div>
             </div>
-            <div className="space-y-4">
-              <div className="h-8 w-1/4 bg-gray-300 dark:bg-slate-600 rounded"></div>
-              <div className="h-4 bg-gray-200 dark:bg-slate-700 rounded w-full"></div>
-              <div className="h-4 bg-gray-200 dark:bg-slate-700 rounded w-5/6"></div>
+            <div className="space-y-3">
+              <div className="h-6 w-1/3 bg-slate-200 dark:bg-slate-800 rounded"></div>
+              <div className="h-3 bg-slate-200 dark:bg-slate-800 rounded w-full"></div>
+              <div className="h-3 bg-slate-200 dark:bg-slate-800 rounded w-5/6"></div>
             </div>
           </div>
         )}
 
         {/* Results */}
         {!loading && analysisResult && (
-          <div className="w-full bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-orange-200 dark:border-gray-700 p-8 md:p-10 transition-all duration-500 ease-out">
-            <h2 className="text-4xl font-extrabold text-center text-gray-800 dark:text-white mb-8">
+          <div className="w-full bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl shadow-xl border border-orange-200/60 dark:border-slate-800 p-5 sm:p-10 transition-all duration-500 space-y-6 sm:space-y-8">
+            <h2 className="text-2xl sm:text-4xl font-black text-center text-slate-900 dark:text-white">
               Analysis Results
             </h2>
 
-            <div className="bg-linear-to-r from-orange-500 via-orange-600 to-red-500 rounded-3xl p-8 text-center text-white mb-10 shadow-lg max-w-md mx-auto">
-              <h3 className="text-2xl font-semibold mb-2">
-                Resume Match Score
+            {/* Score Card */}
+            <div className="bg-gradient-to-r from-orange-500 via-orange-600 to-red-500 rounded-2xl sm:rounded-3xl p-6 sm:p-8 text-center text-white shadow-md max-w-xs mx-auto">
+              <h3 className="text-xs sm:text-base font-semibold uppercase tracking-wider mb-1 opacity-90">
+                Match Score
               </h3>
-              <h1 className="text-7xl font-black tracking-tight">
+              <h1 className="text-5xl sm:text-7xl font-black tracking-tight">
                 {analysisResult.score}%
               </h1>
             </div>
 
-            <div className="grid grid-cols-1 gap-8">
-              <div className="bg-green-50 dark:bg-green-900 border-l-8 border-green-500 rounded-2xl p-6 md:p-8 shadow-xs">
-                <h3 className="text-2xl font-bold text-green-800 dark:text-green-300 mb-4 flex items-center gap-2">
-                  ✅ Strengths
+            {/* Sections Grid */}
+            <div className="grid grid-cols-1 gap-5 sm:gap-6">
+              
+              {/* Strengths */}
+              <div className="bg-emerald-50/70 dark:bg-emerald-950/30 border-l-4 border-emerald-500 rounded-xl p-4 sm:p-6 shadow-xs">
+                <h3 className="text-lg sm:text-xl font-bold text-emerald-800 dark:text-emerald-300 mb-3 flex items-center gap-2">
+                  <FaCheckCircle className="text-emerald-600 dark:text-emerald-400 shrink-0" /> Strengths
                 </h3>
-                <ul className="list-disc pl-6 space-y-3 text-lg leading-relaxed text-gray-700 dark:text-gray-200">
+                <ul className="list-disc pl-5 space-y-2 text-xs sm:text-base leading-relaxed text-slate-700 dark:text-slate-200">
                   {analysisResult.pros.map((item, index) => (
                     <li key={index}>{item}</li>
                   ))}
                 </ul>
               </div>
 
-              <div className="bg-red-50 dark:bg-red-900 border-l-8 border-red-500 rounded-2xl p-6 md:p-8 shadow-xs">
-                <h3 className="text-2xl font-bold text-red-800 dark:text-red-300 mb-4 flex items-center gap-2">
-                  ⚠️ Areas to Improve
+              {/* Areas to Improve */}
+              <div className="bg-rose-50/70 dark:bg-rose-950/30 border-l-4 border-rose-500 rounded-xl p-4 sm:p-6 shadow-xs">
+                <h3 className="text-lg sm:text-xl font-bold text-rose-800 dark:text-rose-300 mb-3 flex items-center gap-2">
+                  <FaExclamationTriangle className="text-rose-500 dark:text-rose-400 shrink-0" /> Areas to Improve
                 </h3>
-                <ul className="list-disc pl-6 space-y-3 text-lg leading-relaxed text-gray-700 dark:text-gray-200">
+                <ul className="list-disc pl-5 space-y-2 text-xs sm:text-base leading-relaxed text-slate-700 dark:text-slate-200">
                   {analysisResult.cons.map((item, index) => (
                     <li key={index}>{item}</li>
                   ))}
                 </ul>
               </div>
 
-              <div className="bg-blue-50 dark:bg-blue-900 border-l-8 border-blue-500 rounded-2xl p-6 md:p-8 shadow-xs">
-                <h3 className="text-2xl font-bold text-blue-800 dark:text-blue-300 mb-4 flex items-center gap-2">
-                  💡 Suggestions
+              {/* Suggestions */}
+              <div className="bg-sky-50/70 dark:bg-sky-950/30 border-l-4 border-sky-500 rounded-xl p-4 sm:p-6 shadow-xs">
+                <h3 className="text-lg sm:text-xl font-bold text-sky-800 dark:text-sky-300 mb-3 flex items-center gap-2">
+                  <FaLightbulb className="text-sky-500 dark:text-sky-400 shrink-0" /> Suggestions
                 </h3>
-                <ul className="list-disc pl-6 space-y-3 text-lg leading-relaxed text-gray-700 dark:text-gray-200">
+                <ul className="list-disc pl-5 space-y-2 text-xs sm:text-base leading-relaxed text-slate-700 dark:text-slate-200">
                   {analysisResult.needImprove.map((item, index) => (
                     <li key={index}>{item}</li>
                   ))}
                 </ul>
               </div>
+
             </div>
           </div>
         )}
