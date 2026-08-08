@@ -58,7 +58,9 @@ function MockInterview() {
       if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
         try {
           mediaRecorderRef.current.stop();
-        } catch (e) {}
+        } catch (err) {
+          console.log(err);
+        }
       }
     };
   }, []);
@@ -236,7 +238,9 @@ function MockInterview() {
       if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
         try {
           mediaRecorderRef.current.stop();
-        } catch (e) {}
+        } catch (err) {
+          console.log(err);
+        }
       }
       if (stream) stream.getTracks().forEach((track) => track.stop());
       navigate("/u/interview_simulator");
@@ -293,7 +297,7 @@ function MockInterview() {
         >
           {isDarkMode ? "☀ Light" : "🌙 Dark"}
         </button>
-        <div className="text-xs sm:text-sm font-semibold opacity-70 text-center truncate max-w-[200px] sm:max-w-none">
+        <div className="text-xs sm:text-sm font-semibold opacity-70 text-center truncate max-w-50 sm:max-w-none">
           Role: {interview.job_role}
         </div>
         <button
@@ -377,7 +381,7 @@ function MockInterview() {
           </div>
         </div>
 
-        <div className="flex flex-col items-center justify-center bg-slate-950 rounded-xl p-3 sm:p-4 border border-slate-800 relative overflow-hidden h-[300px] sm:min-h-[400px] order-1 lg:order-2">
+        <div className="flex flex-col items-center justify-center bg-slate-950 rounded-xl p-3 sm:p-4 border border-slate-800 relative overflow-hidden h-75 sm:min-h-100 order-1 lg:order-2">
           <video
             ref={videoRef}
             autoPlay
