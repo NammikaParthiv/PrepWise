@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "../../../utils/axios.js";
 
-function RMockInterview() {
+function WMockInterview() {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -14,7 +14,6 @@ function RMockInterview() {
   const [answers, setAnswers] = useState({});
   const [submitting, setSubmitting] = useState(false);
 
-  // Safety fallback if accessed directly without state
   useEffect(() => {
     if (!interviewData || !interviewData.questions) {
       alert("No active interview session found. Redirecting to simulator.");
@@ -62,7 +61,8 @@ function RMockInterview() {
         answer: answers[idx] || "",
       }));
 
-      await axios.post(`/api/interview/${interviewData._id}/submit`, {
+      await axios.post('/api/interview/submit', {
+        interviewId: interviewData._id,
         answers: formattedAnswers,
       });
 
@@ -79,7 +79,6 @@ function RMockInterview() {
     <div className={darkMode ? "dark" : ""}>
       <div className="min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 flex flex-col justify-between p-4 sm:p-8">
         
-        {/* Top Bar: Progress Indicator & Theme Toggle */}
         <header className="w-full max-w-4xl mx-auto flex justify-between items-center mb-6">
           <div className="flex items-center space-x-2">
             <span className="bg-indigo-600 text-white font-bold px-3 py-1 rounded-full text-sm">
@@ -90,7 +89,6 @@ function RMockInterview() {
             </span>
           </div>
 
-          {/* Theme Toggle Button (Top Right) */}
           <button
             onClick={() => setDarkMode(!darkMode)}
             className="p-2.5 rounded-full bg-white dark:bg-slate-800 shadow-md border border-slate-300 dark:border-slate-700 hover:scale-105 transition-transform cursor-pointer"
@@ -100,11 +98,9 @@ function RMockInterview() {
           </button>
         </header>
 
-        {/* Main Exam Box */}
         <main className="w-full max-w-4xl mx-auto flex-1 flex flex-col justify-center">
           <div className="bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 shadow-2xl rounded-2xl p-6 sm:p-10 flex flex-col">
             
-            {/* Question Header Box */}
             <div className="mb-6 pb-4 border-b border-slate-200 dark:border-slate-800">
               <h2 className="text-xs uppercase tracking-wider text-indigo-500 font-bold mb-1">
                 Written Assessment Question
@@ -114,7 +110,6 @@ function RMockInterview() {
               </h1>
             </div>
 
-            {/* Big Text Box for Answering */}
             <div className="flex flex-col flex-1">
               <label 
                 htmlFor="answer-box" 
@@ -135,7 +130,6 @@ function RMockInterview() {
               </p>
             </div>
 
-            {/* Navigation / Action Buttons */}
             <div className="flex flex-wrap justify-between items-center mt-8 pt-6 border-t border-slate-200 dark:border-slate-800 gap-4">
               <button
                 type="button"
@@ -175,7 +169,6 @@ function RMockInterview() {
           </div>
         </main>
 
-        {/* Footer info */}
         <footer className="w-full max-w-4xl mx-auto text-center mt-6 text-xs text-slate-500 dark:text-slate-500">
           Mock Interview System &bull; All changes saved locally per question session.
         </footer>
@@ -185,4 +178,4 @@ function RMockInterview() {
   );
 }
 
-export default RMockInterview;
+export default WMockInterview;

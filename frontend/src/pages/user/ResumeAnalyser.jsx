@@ -23,8 +23,8 @@ function ResumeAnalyser() {
 
     try {
       const res = await axios.post("/api/resume_analyser/addResume", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+  headers: { "Content-Type": undefined },
+});
       setAnalysisResult(res.data.data);
     } catch (error) {
       console.log("Resume Upload Failed", error);

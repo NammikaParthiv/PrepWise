@@ -3,9 +3,9 @@ import UserDashboard from "./pages/user/UserDashboard";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import NavBar from "./pages/layouts/NavBar";
-import ResumeAnalyser from "./pages/user/ResmueAnalyser";
+import ResumeAnalyser from "./pages/user/ResumeAnalyser";
 import VMockInterview from "./pages/user/MockInterview/V-MockInterview";
-import RMockInterview from "./pages/user/MockInterview/R-MockInterview";
+import WMockInterview from "./pages/user/MockInterview/W-MockInterview";
 import History from "./pages/user/history/History";
 import ResumeDetials from "./pages/user/history/ResumeDetails";
 import Profile from "./pages/Profile";
@@ -67,7 +67,7 @@ function App() {
           />
           <Route
             path="/u/interview_simulator/w-session"
-            element={<RMockInterview />}
+            element={<WMockInterview />}
           />
           <Route path="/u/references" element={<References />} />
           <Route path="/u/history" element={<History />} />

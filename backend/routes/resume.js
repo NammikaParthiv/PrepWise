@@ -6,7 +6,7 @@ import upload from "../utils/multer.js"
 
 const router = express.Router();
 
-router.post("/addResume",upload.single("resume"),protect,addResume);
+router.post("/addResume",protect,upload.single("resume"),addResume);
 router.get("/admin_resume_history",protect,adminResumeHistory);
 router.get("/resume_history/:id",protect,getSingleResume);
 router.get("/resume_history",protect,resumeHistory);

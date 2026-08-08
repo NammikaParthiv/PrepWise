@@ -63,9 +63,7 @@ function Profile() {
         formData.append("gender", gender);
         formData.append("profilePic", photoFile);
 
-        res = await axios.put("/api/user/profile", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
+        res = await axios.put("/api/user/profile", formData);
       } else {
         res = await axios.put("/api/user/profile", payload);
       }

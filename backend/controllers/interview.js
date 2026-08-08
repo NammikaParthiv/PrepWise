@@ -2,6 +2,13 @@ import Interview from "../models/interview.js";
 import { ai } from "../config/gemini.js";
 import {interviewQueue} from "../queues/interview_queue.js"
 import redisClient from "../config/redis.js";
+import fs from "fs";
+import axios from "axios";
+import FormData from "form-data";
+
+const WHISPER_API_URL = process.env.WHISPER_API_URL || "http://localhost:8000/v1/audio/transcriptions";
+const WHISPER_MODEL = process.env.WHISPER_MODEL || "Systran/faster-distil-whisper-small.en";
+
 
 export const generateInterview = async (req, res) => {
   const { job_role } = req.body;
@@ -229,5 +236,44 @@ export const getInterview = async (req, res) => {
     res.status(200).json({ interview });
   } catch (error) {
     res.status(500).json({ msg: "Server Error" });
+  }
+};
+
+export const transcribeAnswer = async (req, res) => {
+  const filePath = req.file?.path;
+
+  try {
+    if (!filePath) {
+      return res.status(400).json({ msg: "No audio file received" });
+    }
+
+    const form = new FormData();
+    form.append("file", fs.createReadStream(filePath), {
+      filename: req.file.filename,
+      contentType: "audio/webm",
+    });
+    form.append("model", WHISPER_MODEL);
+    form.append("language", "en");
+    form.append("response_format", "json");
+    form.append("vad_filter", "true");
+
+    const whisperRes = await axios.post(WHISPER_API_URL, form, {
+      headers: form.getHeaders(),
+      timeout: 60000,
+    });
+
+    const text = whisperRes.data?.text?.trim() || "";
+
+    return res.status(200).json({ text });
+  } catch (error) {
+    console.error("Transcription error:", error.message);
+    return res.status(500).json({ msg: "Failed to transcribe audio" });
+  } finally {
+    // Always clean up the temp file, whether transcription succeeded or not.
+    if (filePath) {
+      fs.unlink(filePath, (err) => {
+        if (err) console.error("Failed to delete temp audio file:", err);
+      });
+    }
   }
 };

@@ -3,57 +3,46 @@ import { useNavigate, useLocation } from "react-router-dom";
 import axios from "../../../utils/axios.js";
 
 function MockInterview() {
-  // TEMP DEBUG — watch your browser console while doing one full answer.
-  // "recognition.start() called" should appear once, then only occasionally
-  // again (seconds/tens-of-seconds apart) if Chrome naturally restarts after
-  // a pause — that's expected Chrome behavior, not a bug (confirmed by
-  // Chromium's own engineers, not fixable in JS).
-  // If instead you see it firing every ~1-2 seconds in a tight burst, that's
-  // a REAL bug (mic contention, permissions issue, etc.) — send me that
-  // console output and I'll trace the actual cause instead of guessing.
-  const DEBUG = true;
-  const log = (...args) => DEBUG && console.log("[MockInterview]", ...args);
-
   const navigate = useNavigate();
   const location = useLocation();
+
   const [queNo, setQueNo] = useState(1);
   const [allAnswers, setAllAnswers] = useState([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
 
-  // Timers & Phases: "reading" (30s) -> "answering" (120s / 2 mins)
+  // "reading" (30s) -> "answering" (120s)
   const [phase, setPhase] = useState("reading");
-  const [timeLeft, setTimeLeft] = useState(30);
+  const [timeLeft, setTimeLeft] = useState(2);
 
-  // Live transcript, produced by the browser's own speech engine — free,
-  // zero tokens, no server round trip.
-  const [currentTranscript, setCurrentTranscript] = useState("");
-  const accumulatedTranscriptRef = useRef(""); // finalized text for THIS question
-  const recognitionRef = useRef(null);
+  // Per-question background transcription status, purely for a quiet UI
+  // indicator — never gates navigation.
+  // idle | recording | processing | done | error
+  const [transcriptionStatuses, setTranscriptionStatuses] = useState([]);
+
   const videoRef = useRef(null);
   const [stream, setStream] = useState(null);
+  const audioStreamRef = useRef(null); // audio-only tracks, for MediaRecorder
 
-  // true while we WANT recognition running; flipping it to false is how we
-  // signal "stop for real" (vs. Chrome auto-ending a session on its own).
-  const isAnsweringRef = useRef(false);
-  // Resolves stopSpeechRecognition()'s promise once onend confirms a REAL stop.
-  const stopResolverRef = useRef(null);
-  // Prevents calling .start() while an instance is already active.
-  const isRecognitionRunningRef = useRef(false);
-  // Prevents nextQuestion from running twice concurrently for one question.
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  // One in-flight-upload promise per question index — awaited only at
+  // final submit, never during navigation.
+  const pendingUploadsRef = useRef([]);
   const isAdvancingRef = useRef(false);
 
   const interview = location.state?.interview;
   const questions = interview?.questions || [];
 
-  // 1. Webcam + mic (video is shown live for the candidate; no video upload
-  // is needed anymore since transcription happens client-side).
+  // 1. Webcam (for the candidate to see themselves) + mic. We split the mic
+  // track off into its own MediaStream so MediaRecorder captures audio only.
   useEffect(() => {
     let mediaStream = null;
     async function setupCamera() {
       try {
         mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
         setStream(mediaStream);
+        audioStreamRef.current = new MediaStream(mediaStream.getAudioTracks());
         if (videoRef.current) {
           videoRef.current.srcObject = mediaStream;
         }
@@ -65,199 +54,152 @@ function MockInterview() {
     setupCamera();
 
     return () => {
-      isAnsweringRef.current = false;
-      if (mediaStream) {
-        mediaStream.getTracks().forEach((track) => track.stop());
-      }
-      if (recognitionRef.current) {
+      if (mediaStream) mediaStream.getTracks().forEach((track) => track.stop());
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
         try {
-          recognitionRef.current.stop();
+          mediaRecorderRef.current.stop();
         } catch (e) {}
       }
     };
   }, []);
 
-  // 2. Speech Recognition — runs continuously through the whole answer,
-  // restarting itself if Chrome ends a session early (e.g. after a pause),
-  // so no speech is lost mid-answer.
-  const startSpeechRecognition = useCallback(() => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      console.warn("Speech Recognition not supported in this browser — use Chrome or Edge.");
-      return;
-    }
-
-    isAnsweringRef.current = true;
-
-    const recognition = new SpeechRecognition();
-    recognitionRef.current = recognition;
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = "en-US";
-
-    recognition.onstart = () => {
-      isRecognitionRunningRef.current = true;
-    };
-
-    recognition.onresult = (event) => {
-      let interimText = "";
-      let newFinalText = "";
-
-      for (let i = event.resultIndex; i < event.results.length; ++i) {
-        const piece = event.results[i][0].transcript;
-        if (event.results[i].isFinal) {
-          newFinalText += piece + " ";
-        } else {
-          interimText += piece;
-        }
-      }
-
-      if (newFinalText) {
-        accumulatedTranscriptRef.current += newFinalText;
-      }
-      setCurrentTranscript(accumulatedTranscriptRef.current + interimText);
-    };
-
-    recognition.onerror = (event) => {
-      const fatalErrors = ["not-allowed", "audio-capture", "service-not-allowed"];
-      if (fatalErrors.includes(event.error)) {
-        console.error("Fatal speech recognition error, stopping restarts:", event.error);
-        isAnsweringRef.current = false;
-      } else if (event.error !== "no-speech" && event.error !== "aborted") {
-        console.warn("Speech recognition warning:", event.error);
-      }
-      log("onerror fired:", event.error);
-    };
-
-    recognition.onend = () => {
-      isRecognitionRunningRef.current = false;
-      log("onend fired");
-
-      if (isAnsweringRef.current) {
-        try {
-          recognition.start();
-          log("recognition.start() called (RESTART — Chrome ended the session on its own)");
-        } catch (e) {
-          setTimeout(() => {
-            if (isAnsweringRef.current && recognitionRef.current && !isRecognitionRunningRef.current) {
-              try {
-                recognitionRef.current.start();
-                log("recognition.start() called (delayed RESTART)");
-              } catch (err) {}
-            }
-          }, 300);
-        }
-      } else if (stopResolverRef.current) {
-        const resolve = stopResolverRef.current;
-        stopResolverRef.current = null;
-        resolve();
-      }
-    };
-
-    try {
-      recognition.start();
-      log("recognition.start() called (initial)");
-    } catch (err) {
-      console.error("Failed to start speech recognition instance:", err);
-    }
-  }, []);
-
-  // Resolves only once onend confirms recognition has fully, finally
-  // stopped — so callers never read the transcript before the last words
-  // are finalized.
-  const stopSpeechRecognition = useCallback(() => {
-    return new Promise((resolve) => {
-      isAnsweringRef.current = false;
-
-      if (recognitionRef.current && isRecognitionRunningRef.current) {
-        stopResolverRef.current = resolve;
-        try {
-          recognitionRef.current.stop();
-        } catch (e) {
-          stopResolverRef.current = null;
-          resolve();
-        }
-      } else {
-        resolve();
-      }
-    });
-  }, []);
-
+  // 2. Start recording audio for the current question.
   const startRecording = useCallback(() => {
-    accumulatedTranscriptRef.current = "";
-    setCurrentTranscript("");
-    startSpeechRecognition();
-  }, [startSpeechRecognition]);
+    if (!audioStreamRef.current) return;
 
-  const nextQuestion = useCallback(async () => {
+    audioChunksRef.current = [];
+    const recorder = new MediaRecorder(audioStreamRef.current, { mimeType: "audio/webm" });
+
+    recorder.ondataavailable = (e) => {
+      if (e.data.size > 0) audioChunksRef.current.push(e.data);
+    };
+
+    mediaRecorderRef.current = recorder;
+    recorder.start();
+
+    setTranscriptionStatuses((prev) => {
+      const copy = [...prev];
+      copy[queNo - 1] = "recording";
+      return copy;
+    });
+  }, [queNo]);
+
+  // 3. Upload one answer's audio in the background. Fire-and-forget from the
+  // caller's perspective — the returned promise is only ever awaited in bulk
+  // at final submit time.
+  const uploadAudioForTranscription = useCallback(
+    (blob, index) => {
+      const promise = (async () => {
+        try {
+          const formData = new FormData();
+          formData.append("audio", blob, `answer-${index + 1}.webm`);
+          formData.append("questionIndex", String(index));
+
+          const res = await axios.post("/api/interview/transcribe", formData, {
+          headers: { "Content-Type": undefined },
+          });
+
+          const text = res.data?.text?.trim() || "[No clear speech detected]";
+
+          setAllAnswers((prev) => {
+            const copy = [...prev];
+            copy[index] = { question: questions[index]?.question || "", answer: text };
+            return copy;
+          });
+          setTranscriptionStatuses((prev) => {
+            const copy = [...prev];
+            copy[index] = "done";
+            return copy;
+          });
+        } catch (err) {
+          console.error(`Transcription failed for question ${index + 1}:`, err);
+          setAllAnswers((prev) => {
+            const copy = [...prev];
+            copy[index] = { question: questions[index]?.question || "", answer: "[Transcription failed]" };
+            return copy;
+          });
+          setTranscriptionStatuses((prev) => {
+            const copy = [...prev];
+            copy[index] = "error";
+            return copy;
+          });
+        }
+      })();
+
+      pendingUploadsRef.current[index] = promise;
+    },
+    [questions]
+  );
+
+  // 4. Stop recording for a given question index and kick off its upload —
+  // does NOT wait for the upload to resolve.
+  const stopRecordingAndUpload = useCallback(
+    (index) => {
+      const recorder = mediaRecorderRef.current;
+      if (!recorder || recorder.state === "inactive") return;
+
+      setTranscriptionStatuses((prev) => {
+        const copy = [...prev];
+        copy[index] = "processing";
+        return copy;
+      });
+
+      recorder.onstop = () => {
+        const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        audioChunksRef.current = [];
+        uploadAudioForTranscription(blob, index);
+      };
+
+      recorder.stop();
+    },
+    [uploadAudioForTranscription]
+  );
+
+  // 5. Advance immediately; recording stop + upload happen in the background.
+  const nextQuestion = useCallback(() => {
     if (isAdvancingRef.current) return;
     isAdvancingRef.current = true;
 
-    try {
-      let finalAnswerText = "";
-      if (phase === "answering") {
-        await stopSpeechRecognition(); // wait for the last words to finalize
-        finalAnswerText = accumulatedTranscriptRef.current.trim();
-      }
-
-      const updatedAnswers = [...allAnswers];
-      updatedAnswers[queNo - 1] = {
-        question: questions[queNo - 1]?.question || "",
-        answer: finalAnswerText || "[No clear speech detected]",
-      };
-      setAllAnswers(updatedAnswers);
-
-      accumulatedTranscriptRef.current = "";
-      setCurrentTranscript("");
-
-      if (queNo < questions.length) {
-        setQueNo((prev) => prev + 1);
-        setPhase("reading");
-        setTimeLeft(30);
-        isAdvancingRef.current = false;
-      } else {
-        await completeInterview(updatedAnswers);
-        isAdvancingRef.current = false;
-      }
-    } catch (e) {
-      isAdvancingRef.current = false;
-      throw e;
+    const currentIndex = queNo - 1;
+    if (phase === "answering") {
+      stopRecordingAndUpload(currentIndex);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase, allAnswers, queNo, questions, stopSpeechRecognition]);
 
-  const completeInterview = useCallback(
-    async (finalAnswers) => {
-      setIsAnalyzing(true);
-      if (stream) {
-        stream.getTracks().forEach((track) => track.stop());
-      }
-      try {
-        // Plain JSON — matches your existing backend exactly, no changes
-        // needed there. Transcription already happened client-side, so
-        // there's no video to upload and no waiting on Gemini for text.
-        const res = await axios.post("/api/interview/submit", {
-          interviewId: interview._id,
-          answers: finalAnswers.map((a) => ({ answer: a.answer })),
-        });
+    if (queNo < questions.length) {
+      setQueNo((prev) => prev + 1);
+      setPhase("reading");
+      setTimeLeft(30);
+      isAdvancingRef.current = false;
+    } else {
+      finishInterview();
+      isAdvancingRef.current = false;
+    }
+  }, [phase, queNo, questions, stopRecordingAndUpload]);
 
-        navigate("/u/interview_simulator/result", {
-          replace: true,
-          state: { interview: res.data.interview },
-        });
-      } catch (error) {
-        console.log(error);
-        alert(error.response?.data?.msg || "Failed to submit interview");
-        setIsAnalyzing(false);
-      }
-    },
-    [stream, interview, navigate]
-  );
+  // 6. Only HERE do we ever wait — for any answers still transcribing.
+  const finishInterview = useCallback(async () => {
+    setIsAnalyzing(true);
+    if (stream) stream.getTracks().forEach((track) => track.stop());
 
-  // Refs so the timer effect never depends on nextQuestion/startRecording
-  // directly — their identity changes on almost every render (they close
-  // over allAnswers/queNo), and depending on them would re-run the effect
-  // and fire a duplicate call even when timeLeft/phase hadn't changed.
+    try {
+      await Promise.allSettled(pendingUploadsRef.current.filter(Boolean));
+
+      const res = await axios.post("/api/interview/submit", {
+        interviewId: interview._id,
+        answers: allAnswers.map((a) => ({ answer: a?.answer || "[No clear speech detected]" })),
+      });
+
+      navigate("/u/interview_simulator/result", {
+        replace: true,
+        state: { interview: res.data.interview },
+      });
+    } catch (error) {
+      console.log(error);
+      alert(error.response?.data?.msg || "Failed to submit interview");
+      setIsAnalyzing(false);
+    }
+  }, [stream, interview, allAnswers, navigate]);
+
   const nextQuestionRef = useRef(nextQuestion);
   useEffect(() => {
     nextQuestionRef.current = nextQuestion;
@@ -268,13 +210,10 @@ function MockInterview() {
     startRecordingRef.current = startRecording;
   }, [startRecording]);
 
-  // Main Timer Effect — depends ONLY on values that should genuinely restart
-  // the countdown or trigger a phase transition.
+  // Timer — only depends on values that should restart the countdown.
   useEffect(() => {
     if (timeLeft > 0) {
-      const timer = setTimeout(() => {
-        setTimeLeft((prev) => prev - 1);
-      }, 1000);
+      const timer = setTimeout(() => setTimeLeft((prev) => prev - 1), 1000);
       return () => clearTimeout(timer);
     }
 
@@ -294,15 +233,12 @@ function MockInterview() {
 
   const handleExit = () => {
     if (window.confirm("Are you sure you want to exit? Your progress will not be saved.")) {
-      isAnsweringRef.current = false;
-      if (recognitionRef.current) {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
         try {
-          recognitionRef.current.stop();
+          mediaRecorderRef.current.stop();
         } catch (e) {}
       }
-      if (stream) {
-        stream.getTracks().forEach((track) => track.stop());
-      }
+      if (stream) stream.getTracks().forEach((track) => track.stop());
       navigate("/u/interview_simulator");
     }
   };
@@ -316,10 +252,13 @@ function MockInterview() {
   };
 
   if (isAnalyzing) {
+    const stillProcessing = transcriptionStatuses.filter((s) => s === "processing").length;
     return (
       <div className={`min-h-screen flex flex-col justify-center items-center px-4 ${colors.bg} ${colors.text}`}>
         <div className="animate-spin rounded-full h-16 w-16 sm:h-20 sm:w-20 border-b-4 border-emerald-500 mb-6"></div>
-        <h1 className="text-2xl sm:text-4xl font-black text-center">Analyzing your answers...</h1>
+        <h1 className="text-2xl sm:text-4xl font-black text-center">
+          {stillProcessing > 0 ? "Finishing up your last answer..." : "Analyzing your answers..."}
+        </h1>
       </div>
     );
   }
@@ -328,6 +267,21 @@ function MockInterview() {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
+  };
+
+  const statusDot = (status) => {
+    switch (status) {
+      case "recording":
+        return <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse" title="Recording" />;
+      case "processing":
+        return <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" title="Transcribing in background" />;
+      case "done":
+        return <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" title="Transcribed" />;
+      case "error":
+        return <span className="h-1.5 w-1.5 rounded-full bg-red-600" title="Transcription failed" />;
+      default:
+        return <span className="h-1.5 w-1.5 rounded-full bg-slate-600" title="Not answered yet" />;
+    }
   };
 
   return (
@@ -350,11 +304,23 @@ function MockInterview() {
         </button>
       </div>
 
-      <div className="bg-slate-200 dark:bg-slate-800 h-2.5 sm:h-3 rounded-lg mb-6 shadow-inner">
+      <div className="bg-slate-200 dark:bg-slate-800 h-2.5 sm:h-3 rounded-lg mb-2 shadow-inner">
         <div
           className="bg-emerald-500 h-2.5 sm:h-3 rounded-lg transition-all duration-500"
           style={{ width: `${(queNo / questions.length) * 100}%` }}
         />
+      </div>
+
+      {/* Quiet per-question background status strip */}
+      <div className="flex items-center gap-1.5 mb-6 px-1">
+        {questions.map((_, i) => (
+          <div key={i} className="flex flex-col items-center gap-1">
+            {statusDot(transcriptionStatuses[i])}
+          </div>
+        ))}
+        {transcriptionStatuses.some((s) => s === "processing") && (
+          <span className="text-[10px] text-amber-400 ml-2">Transcribing previous answer in background…</span>
+        )}
       </div>
 
       <div className={`grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 rounded-2xl shadow-2xl p-4 sm:p-8 border ${colors.card}`}>
@@ -383,10 +349,16 @@ function MockInterview() {
             </div>
           </div>
 
-          <div className="p-3 sm:p-4 rounded-xl border border-slate-700 bg-slate-900/50 max-h-36 overflow-y-auto">
-            <p className="text-xs text-slate-400 font-semibold mb-1">Your Spoken Answer (Live):</p>
-            <p className="text-sm text-emerald-300 italic whitespace-pre-wrap">
-              {currentTranscript ? currentTranscript : "(Listening... speak your answer clearly)"}
+          <div className="p-4 sm:p-5 rounded-xl border border-slate-700 bg-slate-900/50 flex items-center gap-3">
+            <div
+              className={`h-3 w-3 rounded-full shrink-0 ${
+                phase === "answering" ? "bg-rose-500 animate-pulse" : "bg-slate-600"
+              }`}
+            />
+            <p className="text-sm text-slate-300">
+              {phase === "answering"
+                ? "Recording your voice — just speak naturally. Nothing is sent until you move on."
+                : "Recording will start automatically once the reading timer ends."}
             </p>
           </div>
 

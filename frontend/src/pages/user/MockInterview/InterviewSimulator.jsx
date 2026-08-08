@@ -15,6 +15,7 @@ function InterviewSimulator() {
     }
     try {
       setLoading(true);
+      console.log("Sending:", { job_role: role, interview_type: interviewType });
       const res = await axios.post("/api/interview/generate", {
         job_role: role,
         interview_type: interviewType,

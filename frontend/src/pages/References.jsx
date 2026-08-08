@@ -46,9 +46,7 @@ const References = () => {
     formData.append("category", activeCategory);
 
     try {
-      const res = await axios.post("/api/references/add_reference", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const res = await axios.post("/api/references/add_reference", formData);
       setMaterials(res.data);
     } catch (error) {
       console.error("Error uploading file:", error);
