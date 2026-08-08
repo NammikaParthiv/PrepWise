@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "../../../utils/axios.js";
 
@@ -13,10 +13,12 @@ function MockInterview() {
 
   // "reading" (30s) -> "answering" (120s)
   const [phase, setPhase] = useState("reading");
-  const [timeLeft, setTimeLeft] = useState(2);
+  const [timeLeft, setTimeLeft] = useState(5);
 
   // Per-question background transcription status, purely for a quiet UI
-  // indicator — never gates navigation.
+  // indicator — never gates navigation for earlier questions; only the
+  // final "wait for everything" step in finishInterview reads it to decide
+  // what message to show.
   // idle | recording | processing | done | error
   const [transcriptionStatuses, setTranscriptionStatuses] = useState([]);
 
@@ -26,13 +28,18 @@ function MockInterview() {
 
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
-  // One in-flight-upload promise per question index — awaited only at
-  // final submit, never during navigation.
+  // One in-flight-upload promise per question index — awaited in bulk only
+  // inside finishInterview, never during normal navigation between
+  // questions.
   const pendingUploadsRef = useRef([]);
   const isAdvancingRef = useRef(false);
 
   const interview = location.state?.interview;
-  const questions = interview?.questions || [];
+  // Memoized so this array has a stable identity across renders — without
+  // this, every callback that depends on `questions` (nextQuestion,
+  // uploadAudioForTranscription) would be recreated on every render, since
+  // `interview?.questions || []` produces a brand-new array each time.
+  const questions = useMemo(() => interview?.questions || [], [interview]);
 
   // 1. Webcam (for the candidate to see themselves) + mic. We split the mic
   // track off into its own MediaStream so MediaRecorder captures audio only.
@@ -86,9 +93,10 @@ function MockInterview() {
     });
   }, [queNo]);
 
-  // 3. Upload one answer's audio in the background. Fire-and-forget from the
-  // caller's perspective — the returned promise is only ever awaited in bulk
-  // at final submit time.
+  // 3. Upload one answer's audio. Registers a promise in pendingUploadsRef
+  // immediately (synchronously, before any await), so finishInterview can
+  // always find and await it later — even if it's called moments after
+  // this function starts running.
   const uploadAudioForTranscription = useCallback(
     (blob, index) => {
       const promise = (async () => {
@@ -98,7 +106,7 @@ function MockInterview() {
           formData.append("questionIndex", String(index));
 
           const res = await axios.post("/api/interview/transcribe", formData, {
-          headers: { "Content-Type": undefined },
+            headers: { "Content-Type": undefined },
           });
 
           const text = res.data?.text?.trim() || "[No clear speech detected]";
@@ -133,57 +141,53 @@ function MockInterview() {
     [questions]
   );
 
-  // 4. Stop recording for a given question index and kick off its upload —
-  // does NOT wait for the upload to resolve.
+  // 4. Stop recording for a given question index, then kick off its upload.
+  // Resolves once the recorder has genuinely stopped and the upload promise
+  // has been REGISTERED in pendingUploadsRef — NOT once transcription
+  // itself finishes. For every question except the last, this resolves
+  // almost instantly and the actual transcription keeps running quietly in
+  // the background while the user reads/answers the next question.
   const stopRecordingAndUpload = useCallback(
     (index) => {
-      const recorder = mediaRecorderRef.current;
-      if (!recorder || recorder.state === "inactive") return;
+      return new Promise((resolve) => {
+        const recorder = mediaRecorderRef.current;
+        if (!recorder || recorder.state === "inactive") {
+          resolve();
+          return;
+        }
 
-      setTranscriptionStatuses((prev) => {
-        const copy = [...prev];
-        copy[index] = "processing";
-        return copy;
+        setTranscriptionStatuses((prev) => {
+          const copy = [...prev];
+          copy[index] = "processing";
+          return copy;
+        });
+
+        recorder.onstop = () => {
+          const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+          audioChunksRef.current = [];
+          uploadAudioForTranscription(blob, index);
+          resolve();
+        };
+
+        recorder.stop();
       });
-
-      recorder.onstop = () => {
-        const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
-        audioChunksRef.current = [];
-        uploadAudioForTranscription(blob, index);
-      };
-
-      recorder.stop();
     },
     [uploadAudioForTranscription]
   );
 
-  // 5. Advance immediately; recording stop + upload happen in the background.
-  const nextQuestion = useCallback(() => {
-    if (isAdvancingRef.current) return;
-    isAdvancingRef.current = true;
-
-    const currentIndex = queNo - 1;
-    if (phase === "answering") {
-      stopRecordingAndUpload(currentIndex);
-    }
-
-    if (queNo < questions.length) {
-      setQueNo((prev) => prev + 1);
-      setPhase("reading");
-      setTimeLeft(30);
-      isAdvancingRef.current = false;
-    } else {
-      finishInterview();
-      isAdvancingRef.current = false;
-    }
-  }, [phase, queNo, questions, stopRecordingAndUpload]);
-
-  // 6. Only HERE do we ever wait — for any answers still transcribing.
+  // 5. Wait for EVERY question's transcription to genuinely finish, THEN
+  // submit for Gemini evaluation, THEN navigate to the result page. Nothing
+  // is shown to the user until all of this completes — declared BEFORE
+  // nextQuestion since nextQuestion calls it via a ref (see below), and to
+  // keep the file's read order matching the actual call order.
   const finishInterview = useCallback(async () => {
     setIsAnalyzing(true);
     if (stream) stream.getTracks().forEach((track) => track.stop());
 
     try {
+      // Waits for every registered upload/transcription — including the
+      // last question's, now guaranteed to be registered by nextQuestion
+      // awaiting stopRecordingAndUpload before calling this.
       await Promise.allSettled(pendingUploadsRef.current.filter(Boolean));
 
       const res = await axios.post("/api/interview/submit", {
@@ -201,6 +205,38 @@ function MockInterview() {
       setIsAnalyzing(false);
     }
   }, [stream, interview, allAnswers, navigate]);
+
+  // Ref so nextQuestion always calls the freshest finishInterview (latest
+  // allAnswers/interview closure) without needing to list it as a
+  // useCallback dependency — same pattern used for nextQuestionRef below.
+  const finishInterviewRef = useRef(finishInterview);
+  useEffect(() => {
+    finishInterviewRef.current = finishInterview;
+  }, [finishInterview]);
+
+  // 6. Advance to the next question, or finish. Awaits only the brief
+  // stop-and-register step from stopRecordingAndUpload — actual
+  // transcription keeps running in the background for every question
+  // except the last, where finishInterview will properly wait for it.
+  const nextQuestion = useCallback(async () => {
+    if (isAdvancingRef.current) return;
+    isAdvancingRef.current = true;
+
+    const currentIndex = queNo - 1;
+    if (phase === "answering") {
+      await stopRecordingAndUpload(currentIndex);
+    }
+
+    if (queNo < questions.length) {
+      setQueNo((prev) => prev + 1);
+      setPhase("reading");
+      setTimeLeft(30);
+      isAdvancingRef.current = false;
+    } else {
+      finishInterviewRef.current();
+      isAdvancingRef.current = false;
+    }
+  }, [phase, queNo, questions, stopRecordingAndUpload]);
 
   const nextQuestionRef = useRef(nextQuestion);
   useEffect(() => {
@@ -263,6 +299,7 @@ function MockInterview() {
         <h1 className="text-2xl sm:text-4xl font-black text-center">
           {stillProcessing > 0 ? "Finishing up your last answer..." : "Analyzing your answers..."}
         </h1>
+        <p className="text-sm text-slate-400 mt-2">This may take a minute or two.</p>
       </div>
     );
   }
