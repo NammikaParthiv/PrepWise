@@ -7,13 +7,20 @@ function MockInterview() {
   const location = useLocation();
 
   const [queNo, setQueNo] = useState(1);
-  const [allAnswers, setAllAnswers] = useState([]);
+  // Tracked as a ref, not state — this array is never rendered directly
+  // (only transcriptionStatuses drives the UI), and finishInterview needs
+  // to read the truly-current value after awaiting all transcriptions.
+  // A state-based closure would still hold whatever allAnswers looked like
+  // when this render's finishInterview was created, even after awaiting —
+  // React state updates don't retroactively change an already-captured
+  // variable. A ref sidesteps that entirely since .current is always live.
+  const allAnswersRef = useRef([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
 
   // "reading" (30s) -> "answering" (120s)
   const [phase, setPhase] = useState("reading");
-  const [timeLeft, setTimeLeft] = useState(5);
+  const [timeLeft, setTimeLeft] = useState(30);
 
   // Per-question background transcription status, purely for a quiet UI
   // indicator — never gates navigation for earlier questions; only the
@@ -111,11 +118,8 @@ function MockInterview() {
 
           const text = res.data?.text?.trim() || "[No clear speech detected]";
 
-          setAllAnswers((prev) => {
-            const copy = [...prev];
-            copy[index] = { question: questions[index]?.question || "", answer: text };
-            return copy;
-          });
+          // Direct, synchronous mutation — no closure staleness possible.
+          allAnswersRef.current[index] = { question: questions[index]?.question || "", answer: text };
           setTranscriptionStatuses((prev) => {
             const copy = [...prev];
             copy[index] = "done";
@@ -123,11 +127,7 @@ function MockInterview() {
           });
         } catch (err) {
           console.error(`Transcription failed for question ${index + 1}:`, err);
-          setAllAnswers((prev) => {
-            const copy = [...prev];
-            copy[index] = { question: questions[index]?.question || "", answer: "[Transcription failed]" };
-            return copy;
-          });
+          allAnswersRef.current[index] = { question: questions[index]?.question || "", answer: "[Transcription failed]" };
           setTranscriptionStatuses((prev) => {
             const copy = [...prev];
             copy[index] = "error";
@@ -190,9 +190,14 @@ function MockInterview() {
       // awaiting stopRecordingAndUpload before calling this.
       await Promise.allSettled(pendingUploadsRef.current.filter(Boolean));
 
+      // Build the payload from the ref, not from any closed-over state —
+      // this is guaranteed to reflect every transcription that just
+      // finished during the await above, including the last question's.
+      const finalAnswers = questions.map((_, index) => allAnswersRef.current[index]);
+
       const res = await axios.post("/api/interview/submit", {
         interviewId: interview._id,
-        answers: allAnswers.map((a) => ({ answer: a?.answer || "[No clear speech detected]" })),
+        answers: finalAnswers.map((a) => ({ answer: a?.answer || "[No clear speech detected]" })),
       });
 
       navigate("/u/interview_simulator/result", {
@@ -204,7 +209,7 @@ function MockInterview() {
       alert(error.response?.data?.msg || "Failed to submit interview");
       setIsAnalyzing(false);
     }
-  }, [stream, interview, allAnswers, navigate]);
+  }, [stream, interview, questions, navigate]);
 
   // Ref so nextQuestion always calls the freshest finishInterview (latest
   // allAnswers/interview closure) without needing to list it as a
