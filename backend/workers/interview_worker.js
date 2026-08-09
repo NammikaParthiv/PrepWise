@@ -12,15 +12,33 @@ const interviewWorker = new Worker(
     console.log(`Generating questions for ${job_role}`);
     console.log(job.data);
     try {
-      const prompt = `Generate 1 real-time company interview questions for graduating students from b.tech for the job-role:${job_role}.
-     Return only a valid json array as given in the below example:
-     example:
+      const prompt = `
+      Generate exactly 3 realistic technical interview question for a B.Tech graduating student applying for the job role: ${job_role}.
+
+      The question should feel like something a candidate could actually face in a real company placement interview.
+
+      Requirements:
+      - Make the question relevant to the specified job role.
+      - Focus on concepts commonly tested in real placement interviews.
+      - Prefer practical, application-based, or scenario-based questions over simple textbook definitions.
+      - When appropriate, give a realistic situation and ask the candidate what they would do and why.
+      - Test understanding, problem-solving, and practical knowledge rather than memorization.
+      - Questions should be appropriate for a graduating B.Tech student, not an experienced professional.
+      - If the question is a coding/problem-solving question, DO NOT ask for complete code. Ask the candidate to explain the approach, logic, algorithm, or pseudocode.
+      - Do NOT ask for language-specific syntax unless it is important to the question.
+      - For theoretical questions, phrase them naturally like a real interviewer would during a placement interview.
+      - Avoid vague, repetitive, trivial, or overly academic questions.
+      - Do not include the answer or explanation.
+
+      Return ONLY a valid JSON array containing exactly one question string.
+
+      Example:
       [
-        "Question 1",
-        "Question 2",
-        ...
+        "Suppose your API suddenly starts receiving 10 times more traffic than usual. How would you identify the bottleneck and what changes would you consider to handle the increased load?"
       ]
-     `;
+
+      Job Role: ${job_role}
+      `;
       const result = await ai.models.generateContent({
         model: "gemini-2.5-flash",
         contents: prompt,

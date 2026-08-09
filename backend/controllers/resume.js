@@ -15,28 +15,77 @@ export const addResume = async (req, res) => {
     const dataBuffer = fs.readFileSync(pdfPath);
 
     const pdfData = await pdfParse(dataBuffer);
+        const prompt = `
+        You are a strict and honest ATS Resume Screening Assistant.
 
-    const prompt = `
-You are an ATS Resume Screening Assistant.
+        Compare the resume with the job description and evaluate the candidate like a real recruiter.
 
-Compare the resume with the provided job description.
+        Be completely evidence-based:
+        - Tell the truth even if the resume is a poor match.
+        - Never inflate the score or give praise just to be positive.
+        - Never assume or invent skills, experience, projects, or qualifications.
+        - Give credit only for strengths clearly supported by the resume and relevant to the job.
+        - If there are no meaningful strengths, return an empty pros array.
+        - If there are no meaningful weaknesses, return an empty cons array.
+        - Do not force a fixed number of items.
+        - Prioritize important job requirements over minor details.
+        - If a required skill is not demonstrated, clearly mention that.
 
-Return ONLY valid JSON.
+        Return ONLY valid JSON. No markdown, explanations, or extra fields.
 
-{
-  "score": 85,
-  "pros":"...",
-  "cons":"...",
-  "needImprove":"..."
-}
+        Use EXACTLY this structure:
 
-Resume:
-${pdfData.text}
+        {
+          "score": 0,
+          "pros": [],
+          "cons": [],
+          "needImprove": []
+        }
 
-Job Description:
-${job_description}
-also mention in which section i have to change things and what to improve
-`;
+        Rules:
+        - score: realistic match from 0 to 100.
+        - pros: genuine job-relevant strengths only.
+        - cons: genuine job-relevant weaknesses, missing requirements, or skills not demonstrated.
+        - needImprove: specific and actionable recommendations based on the gaps.
+        - All three arrays MUST contain only strings.
+        - NEVER create objects inside the arrays.
+        - NEVER use fields such as "section", "improvement", "reason", or "details".
+        - When useful, mention the resume section naturally inside the string, e.g. "Technical Skills: Improve Python proficiency."
+        - Do not invent information to fill an array.
+
+        Example of the required format:
+
+        {
+          "score": 42,
+          "pros": [
+            "Strong JavaScript and React experience relevant to the frontend requirements."
+          ],
+          "cons": [
+            "Python experience required by the role is not demonstrated.",
+            "Machine learning experience is not demonstrated."
+          ],
+          "needImprove": [
+            "Technical Skills: Develop Python and relevant machine-learning libraries.",
+            "Projects: Add a machine-learning project that demonstrates practical Python experience."
+          ]
+        }
+
+        If there are no genuine positives, use:
+        "pros": []
+
+        If there are no genuine weaknesses, use:
+        "cons": []
+
+        If no meaningful improvements are needed, use:
+        "needImprove": []
+
+        Resume:
+        ${pdfData.text}
+
+        Job Description:
+        ${job_description}
+        `;
+
     const result = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: prompt,

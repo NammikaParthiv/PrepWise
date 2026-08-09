@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { FaFileAlt, FaChalkboardTeacher, FaLightbulb } from "react-icons/fa";
 
 const WelcomePage = () => {
   const navigate = useNavigate();
@@ -36,7 +37,9 @@ const WelcomePage = () => {
         
         <div className="grid gap-6 sm:gap-8">  
           <div className="bg-slate-950/40 sm:bg-slate-900/50 backdrop-blur-md p-6 sm:p-12 rounded-2xl sm:rounded-[3rem] border border-slate-800/80 hover:border-indigo-500/50 transition-all flex flex-col md:flex-row items-center gap-6 sm:gap-10 text-center md:text-left">
-            <div className="text-6xl sm:text-8xl shrink-0">📄</div>
+            <div className="text-5xl sm:text-7xl shrink-0 text-indigo-400">
+              <FaFileAlt />
+            </div>
             <div>
               <h3 className="text-2xl sm:text-4xl font-bold mb-3 sm:mb-4">Smart Resume Analyser</h3>
               <p className="text-sm sm:text-xl text-slate-300 leading-relaxed">
@@ -49,7 +52,9 @@ const WelcomePage = () => {
           </div>
 
           <div className="bg-slate-950/40 sm:bg-slate-900/50 backdrop-blur-md p-6 sm:p-12 rounded-2xl sm:rounded-[3rem] border border-slate-800/80 hover:border-pink-500/50 transition-all flex flex-col md:flex-row-reverse items-center gap-6 sm:gap-10 text-center md:text-left">
-            <div className="text-6xl sm:text-8xl shrink-0">🎙️</div>
+            <div className="text-5xl sm:text-7xl shrink-0 text-pink-400">
+              <FaChalkboardTeacher />
+            </div>
             <div>
               <h3 className="text-2xl sm:text-4xl font-bold mb-3 sm:mb-4">Precision Mock Interviews</h3>
               <p className="text-sm sm:text-xl text-slate-300 leading-relaxed">
@@ -62,7 +67,9 @@ const WelcomePage = () => {
           </div>
 
           <div className="bg-slate-950/40 sm:bg-slate-900/50 backdrop-blur-md p-6 sm:p-12 rounded-2xl sm:rounded-[3rem] border border-slate-800/80 hover:border-emerald-500/50 transition-all flex flex-col md:flex-row items-center gap-6 sm:gap-10 text-center md:text-left">
-            <div className="text-6xl sm:text-8xl shrink-0">💡</div>
+            <div className="text-5xl sm:text-7xl shrink-0 text-emerald-400">
+              <FaLightbulb />
+            </div>
             <div>
               <h3 className="text-2xl sm:text-4xl font-bold mb-3 sm:mb-4">Intelligent Verification</h3>
               <p className="text-sm sm:text-xl text-slate-300 leading-relaxed">

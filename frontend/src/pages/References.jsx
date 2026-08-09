@@ -19,7 +19,11 @@ const References = () => {
 
   const isAdmin = user?.role === "admin";
   const [activeCategory, setActiveCategory] = useState("Frontend");
-  const [materials, setMaterials] = useState({ Frontend: [], Backend: [], DSA: [] });
+  const [materials, setMaterials] = useState({
+    Frontend: [],
+    Backend: [],
+    DSA: [],
+  });
   const [preview, setPreview] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [newName, setNewName] = useState("");
@@ -57,7 +61,9 @@ const References = () => {
     e.stopPropagation();
     if (window.confirm(`Delete "${fileName}"?`)) {
       try {
-        const res = await axios.delete(`/api/references/${id}?category=${activeCategory}`);
+        const res = await axios.delete(
+          `/api/references/${id}?category=${activeCategory}`,
+        );
         setMaterials(res.data);
       } catch (error) {
         console.error("Error in deleting the file:", error);
@@ -114,7 +120,8 @@ const References = () => {
     if (rawPath.startsWith("http://") || rawPath.startsWith("https://")) {
       return rawPath;
     }
-    return `http://localhost:2222${rawPath.startsWith("/") ? rawPath : `/${rawPath}`}`;
+    const backendUrl = import.meta.env.VITE_BACKEND_URL;
+    return `${backendUrl}${rawPath.startsWith("/") ? rawPath : `/${rawPath}`}`;
   };
 
   const renderCardContent = (file, dragHandleProps = null) => (
@@ -143,7 +150,10 @@ const References = () => {
           </div>
 
           {isAdmin && (
-            <div className="flex items-center gap-1 sm:gap-2" onClick={(e) => e.stopPropagation()}>
+            <div
+              className="flex items-center gap-1 sm:gap-2"
+              onClick={(e) => e.stopPropagation()}
+            >
               <button
                 type="button"
                 onClick={(e) => {
@@ -231,7 +241,8 @@ const References = () => {
                 onClick={() => fileInputRef.current.click()}
                 className="w-full md:w-auto flex items-center justify-center gap-2.5 px-6 py-3.5 bg-linear-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-bold rounded-xl sm:rounded-2xl transition-all shadow-md hover:shadow-indigo-500/25 active:scale-95 text-sm sm:text-base cursor-pointer"
               >
-                <FaPlus className="text-xs sm:text-sm" /> <span>Add New Resource</span>
+                <FaPlus className="text-xs sm:text-sm" />{" "}
+                <span>Add New Resource</span>
               </button>
             </div>
           )}
@@ -273,7 +284,11 @@ const References = () => {
                     className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
                   >
                     {activeItems.map((file, index) => (
-                      <Draggable key={file._id} draggableId={file._id} index={index}>
+                      <Draggable
+                        key={file._id}
+                        draggableId={file._id}
+                        index={index}
+                      >
                         {(provided, snapshot) => (
                           <div
                             ref={provided.innerRef}

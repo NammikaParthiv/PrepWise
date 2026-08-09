@@ -46,32 +46,32 @@ function Login() {
   return (
     <>
       <div
-        className="min-h-screen flex items-center justify-center bg-cover bg-center relative"
+        className="min-h-screen flex items-center justify-center bg-cover bg-center relative px-4"
         style={{
           backgroundImage: `url(${loginBG})`,
         }}
       >
-        <div className="bg-white h-100 w-150 rounded-lg text-center opacity-50">
-          <h1 className="font-bold text-4xl m-10 text-gray-900">Login</h1>
+        <div className="bg-white h-100 w-full sm:w-150 rounded-lg text-center opacity-50 flex flex-col justify-center items-center p-6">
+          <h1 className="font-bold text-4xl mb-6 text-gray-900">Login</h1>
           <form
             onSubmit={submitHandle}
-            className="flex flex-col space-y-6 justify-center items-center"
+            className="flex flex-col space-y-6 justify-center items-center w-full"
           >
             <input
               type="email"
               placeholder="Email"
-              className="border w-90 border-gray-700 text-gray-900 rounded py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="border w-90 max-w-full border-gray-700 text-gray-900 rounded py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
               onChange={(e) => setEmail(e.target.value)}
             />
             <input
               type="password"
               placeholder="Password"
               onChange={(e) => setPassword(e.target.value)}
-              className="border w-90 border-gray-700 text-gray-900 rounded py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="border w-90 max-w-full border-gray-700 text-gray-900 rounded py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
 
             {/* Forgot Password Link */}
-            <div className="w-90 text-right -mt-2">
+            <div className="w-90 max-w-full text-right -mt-2">
               <Link
                 to="/forgot-password"
                 className="text-sm text-blue-600 font-semibold hover:underline"

@@ -8,6 +8,13 @@ function InterviewSimulator() {
   const [interviewType, setInterviewType] = useState("written"); // "written" or "live"
   const [loading, setLoading] = useState(false);
 
+  const handleTypeSelect = (type) => {
+    if (type === "live") {
+      alert("⚠️ Note: This feature is not working due to insufficient RAM in the render deployment server.");
+    }
+    setInterviewType(type);
+  };
+
   const startInterview = async () => {
     if (!role) {
       alert("Please select a job role");
@@ -21,7 +28,6 @@ function InterviewSimulator() {
         interview_type: interviewType,
       });
 
-      // Updated session routes based on your preference
       const sessionRoute =
         interviewType === "live"
           ? "/u/interview_simulator/v-session"
@@ -36,7 +42,6 @@ function InterviewSimulator() {
           replace: true,
         });
       } else {
-        // polling -> req for the same api until it gives questions
         const interviewId = res.data.interviewId;
         const interval = setInterval(async () => {
           const response = await axios.get(`/api/interview/${interviewId}`);
@@ -68,8 +73,7 @@ function InterviewSimulator() {
 
   return (
     <div className="relative min-h-screen pb-16 sm:pb-20 bg-linear-to-br from-blue-500 via-blue-200 to-indigo-500 dark:from-indigo-900 dark:via-slate-900 dark:to-black text-black dark:text-white px-4 sm:px-6">
-      
-      {/* Loading Overlay */}
+
       {loading && (
         <div className="fixed inset-0 z-50 flex flex-col justify-center items-center bg-black/80 backdrop-blur-sm px-4">
           <div className="w-20 h-20 sm:w-24 sm:h-24 border-8 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
@@ -82,17 +86,13 @@ function InterviewSimulator() {
       <div
         className={`transition-opacity duration-500 ${loading ? "opacity-20 pointer-events-none" : "opacity-100"}`}
       >
-        {/* Header Title */}
         <div className="pt-10 sm:pt-16">
           <h1 className="text-3xl sm:text-5xl font-extrabold p-4 sm:p-6 bg-linear-to-r from-blue-500 to-violet-600 dark:from-indigo-700 dark:to-violet-600 text-white rounded-2xl shadow-2xl text-center w-full sm:w-fit mx-auto">
-            Mock Interview Simulator
+            Mock Interview 
           </h1>
         </div>
-
-        {/* Main Content Box */}
         <div className="w-full max-w-4xl mx-auto flex flex-col shadow-2xl rounded-2xl border-2 p-6 sm:p-10 mt-8 sm:mt-16 bg-amber-300 dark:bg-slate-800 border-gray-300 dark:border-slate-700">
           
-          {/* Job Role Selection */}
           <p className="text-xl sm:text-2xl mb-4 text-center font-medium">
             Select your job role for giving the interview:
           </p>
@@ -109,15 +109,13 @@ function InterviewSimulator() {
             <option value="data_analyst">Data Analyst</option>
           </select>
 
-          {/* Interview Type Selection Cards */}
           <p className="text-xl sm:text-2xl mb-4 text-center font-medium">
             Choose your interview format:
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full sm:w-3/4 mx-auto mb-8">
-            {/* Written Test Card */}
             <div
-              onClick={() => setInterviewType("written")}
+              onClick={() => handleTypeSelect("written")}
               className={`cursor-pointer p-5 rounded-xl border-2 transition-all flex flex-col items-center text-center ${
                 interviewType === "written"
                   ? "border-green-600 bg-white dark:bg-slate-900 shadow-xl scale-105"
@@ -131,9 +129,8 @@ function InterviewSimulator() {
               </p>
             </div>
 
-            {/* Live Video Interview Card */}
             <div
-              onClick={() => setInterviewType("live")}
+              onClick={() => handleTypeSelect("live")}
               className={`cursor-pointer p-5 rounded-xl border-2 transition-all flex flex-col items-center text-center ${
                 interviewType === "live"
                   ? "border-green-600 bg-white dark:bg-slate-900 shadow-xl scale-105"
@@ -148,17 +145,26 @@ function InterviewSimulator() {
             </div>
           </div>
 
-          {/* Info Card */}
           <div className="text-center bg-gray-200 dark:bg-slate-700 p-6 sm:p-8 border border-gray-500 dark:border-slate-600 rounded-xl mt-2">
             <p className="text-2xl sm:text-3xl font-bold mb-4">
-              🔔 This interview will contain:
+              🔔 Instructions:
             </p>
-            <ul className="text-base sm:text-xl font-semibold text-left list-disc list-inside space-y-2 max-w-md mx-auto">
-              <li>✅ Technical questions</li>
-              <li>✅ Conceptual questions</li>
-              <li>✅ Real interview style questions</li>
-              <li>✅ AI evaluation and feedback</li>
-            </ul>
+            
+            {interviewType === "written" ? (
+              <ul className="text-base sm:text-xl font-semibold text-left list-disc list-inside space-y-2 max-w-md mx-auto">
+                <li>✅ Conceptual core questions</li>
+                <li>✅ Descriptive text-based answers</li>
+                <li>✅ Answer comfortably at your own pace</li>
+                <li>✅ AI evaluation and feedback</li>
+              </ul>
+            ) : (
+              <ul className="text-base sm:text-xl font-semibold text-left list-disc list-inside space-y-2 max-w-md mx-auto">
+                <li>✅ Clear camera visibility check</li>
+                <li>✅ Sit in a place with no voice disturbance</li>
+                <li>✅ Real-time voice interaction style</li>
+                <li>✅ AI evaluation and feedback</li>
+              </ul>
+            )}
           </div>
 
           <button

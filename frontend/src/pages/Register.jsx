@@ -27,38 +27,38 @@ function Register() {
   return (
     <>
       <div
-        className="min-h-screen flex items-center justify-center bg-cover bg-center relative"
+        className="min-h-screen flex items-center justify-center bg-cover bg-center relative px-4"
         style={{
           backgroundImage: `url(${loginBG})`,
         }}
       >
-        <div className="bg-white h-130 w-150 rounded-lg text-center opacity-50">
-          <h1 className="font-bold text-4xl m-10 text-gray-900">Register</h1>
+        <div className="bg-white h-130 w-full sm:w-150 rounded-lg text-center opacity-50 flex flex-col justify-center items-center p-6">
+          <h1 className="font-bold text-4xl mb-2 text-gray-900">Register</h1>
           <p className="mb-5 text-gray-900 font-semibold">Fill the following details</p>
           <form 
             onSubmit={submitHandle}
-            className="flex flex-col space-y-10 justify-center items-center"
+            className="flex flex-col space-y-6 justify-center items-center w-full"
           >
             <input
               type="text"
               placeholder="Username"
               value={name}
               onChange={(e)=>setName(e.target.value)}
-              className="border w-90 font-semibold placeholder:text-black text-gray-900 border-gray-700 rounded py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="border w-90 max-w-full font-semibold placeholder:text-black text-gray-900 border-gray-700 rounded py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <input
               type="email"
               placeholder="Email"
               value={email}
               onChange={(e)=>setEmail(e.target.value)}
-              className="border w-90 border-gray-700 placeholder:text-black text-gray-900 rounded py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="border w-90 max-w-full border-gray-700 placeholder:text-black text-gray-900 rounded py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <input
               type="password"
               placeholder="Password"
               value={password}
               onChange={(e)=> setPassword(e.target.value)}
-              className="border w-90 border-gray-700 placeholder:text-black text-gray-900 rounded py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="border w-90 max-w-full border-gray-700 placeholder:text-black text-gray-900 rounded py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <button
               type="submit"

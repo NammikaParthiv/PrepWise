@@ -137,30 +137,64 @@ export const submitInterview = async (req, res) => {
     });
 
     let prompt = `
-     You are a senior technical interviewer.
-     Evaluate the complete interview.
-     Return ONLY valid JSON.Interview:`;
+      You are a senior technical interviewer evaluating a candidate's mock interview.
 
-    interview.questions.forEach((q, i) => {
-      prompt += `
-      Question ${i + 1}:${q.question}
-      Answer:${q.answer}`;
-    });
+      Evaluate the candidate honestly and based ONLY on what they actually answered.
 
-    prompt += `Return exactly in this format:
+      Rules:
+      - Give realistic scores. Do not inflate or unnecessarily punish.
+      - Give credit for correct/partially correct knowledge.
+      - Do not assume knowledge that was not demonstrated.
+      - "merits" = specific things the candidate correctly explained.
+      - "demerits" = important things missing, incorrect, or unclear that should have been included.
+      - The combination of merits and demerits should show the candidate how to make the answer complete.
+      - Do not use generic merits such as "Good answer".
+      - Do not invent information.
+      - Minor English/grammar mistakes should not heavily affect technical scoring, but mention communication/English issues in suggestions if they affect clarity.
+      - strongAreas = technical topics the candidate explained well.
+      - weakAreas = technical topics the candidate could not explain clearly or completely.
+      - suggestions = specific improvements for the weak areas, including well-known YouTube channels/resources where the candidate can learn those topics. Do not invent channel names.
+      - Do not force a fixed number of merits, demerits, or areas. Empty arrays are allowed.
+
+      Return ONLY valid JSON with exactly this structure:
+
       {
-       "overallScore":85,
-       "strongAreas":"...",
-       "weakAreas":"...",
-       "suggestions":"...",
-       "questions":[
-      {
-       "score":8,
-       "merits":["point1","point2"],
-       "demerits":["point1","point2"]
-       }
-     ]
-   }`;
+        "overallScore": 85,
+        "strongAreas": "...",
+        "weakAreas": "...",
+        "suggestions": "...",
+        "questions": [
+          {
+            "score": 8,
+            "merits": [
+              "Correctly explained ...",
+              "Accurately mentioned ..."
+            ],
+            "demerits": [
+              "Did not explain ...",
+              "Missed ..."
+            ]
+          }
+        ]
+      }
+
+      Output rules:
+      - overallScore: number from 0 to 100.
+      - question score: number from 0 to 10.
+      - strongAreas, weakAreas, suggestions: strings.
+      - merits and demerits: arrays of strings.
+      - Never create objects inside merits or demerits.
+      - No markdown, code blocks, explanations, or extra fields.
+
+      Interview:
+      `;
+
+      interview.questions.forEach((q, i) => {
+        prompt += `
+      Question ${i + 1}: ${q.question}
+      Candidate Answer: ${q.answer}
+      `;
+      });
 
     const result = await ai.models.generateContent({
       model: "gemini-2.5-flash",
