@@ -1,0 +1,49 @@
+services:
+
+  redis:
+    image: redis:7-alpine
+    container_name: prepwise-redis
+    ports:
+      - "6379:6379"
+
+  speaches:
+    image: ghcr.io/speaches-ai/speaches:latest-cpu
+    container_name: speaches
+    ports:
+      - "8000:8000"
+    volumes:
+      - hf-cache:/home/ubuntu/.cache/huggingface/hub
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: prepwise-backend
+    env_file:
+      - ./backend/.env
+    environment:
+      PORT: 2222
+      REDIS_URL: redis://redis:6379
+      WHISPER_API_URL: http://speaches:8000/v1/audio/transcriptions
+      CLIENT_URL: http://localhost
+    ports:
+      - "2222:2222"
+    depends_on:
+      - redis
+      - speaches
+    volumes:
+      - ./backend/uploads:/app/uploads
+      - ./backend/temp:/app/temp
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: prepwise-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  hf-cache:
+    external: true

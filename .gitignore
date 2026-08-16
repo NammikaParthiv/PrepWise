@@ -10,11 +10,12 @@ frontend/.env
 temp/
 
 backend/uploads/
+backend/temp/
 
 .vscode/
 
 #OS-specific
-.DS_Store# Logs
+.DS_Store
 
 #logs
 logs
@@ -159,3 +160,9 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# Docker
+docker-compose.override.yml
+
+# Local Docker data
+*.pid
