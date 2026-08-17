@@ -4,7 +4,10 @@ function Result() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const interview = location.state?.interview;
+  const interview =
+    location.state?.interview ||
+    location.state?.result?.interview ||
+    location.state?.result?.data;
 
   if (!interview) {
     return (
@@ -18,11 +21,14 @@ function Result() {
 
   const score = interview.overallScore;
 
-  let performance = "";
-  if (score >= 70) performance = "Excellent";
-  else if (score >= 50) performance = "Good";
-  else if (score >= 30) performance = "Not Bad";
-  else performance = "Needs Improvement";
+  const performance =
+    score >= 70
+      ? "Excellent"
+      : score >= 50
+      ? "Good"
+      : score >= 30
+      ? "Not Bad"
+      : "Needs Improvement";
 
   return (
     <div className="min-h-screen bg-linear-to-br from-green-100 via-green-50 to-green-200 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 pb-12">

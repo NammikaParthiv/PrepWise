@@ -222,9 +222,6 @@ const References = () => {
               <FaBookOpen />
             </div>
             <div>
-              <span className="inline-block text-[10px] sm:text-xs font-extrabold uppercase tracking-wider text-indigo-700 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-950/80 px-2.5 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800/60 mb-1">
-                Library
-              </span>
               <h1 className="text-2xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tight">
                 Reference Library
               </h1>

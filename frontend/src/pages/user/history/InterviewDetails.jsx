@@ -1,7 +1,16 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import axios from "../../../utils/axios";
-import { FaCommentDots, FaBriefcase, FaRegCalendarAlt, FaQuestionCircle, FaCheckCircle, FaExclamationCircle } from "react-icons/fa";
+import {
+  FaCommentDots,
+  FaBriefcase,
+  FaRegCalendarAlt,
+  FaQuestionCircle,
+  FaCheckCircle,
+  FaExclamationCircle,
+  FaPlusCircle,
+  FaMinusCircle,
+} from "react-icons/fa";
 
 const formatFullDateTime = (dateString) => {
   if (!dateString) return "Date unavailable";
@@ -85,8 +94,8 @@ function InterviewDetails() {
   const suggestionsText = interview.suggestions || interview.finalSuggestions;
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-violet-100 via-purple-50 to-violet-200 dark:from-slate-900 dark:via-indigo-950 dark:to-slate-900 pb-16 px-4 sm:px-6">
-      <div className="max-w-5xl mx-auto pt-24 sm:pt-28">
+    <div className="min-h-screen bg-linear-to-br from-violet-100 via-purple-50 to-violet-200 dark:from-slate-900 dark:via-indigo-950 dark:to-slate-900 pb-16 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl xl:max-w-7xl mx-auto pt-24 sm:pt-28">
         
         {/* Top Header Badge */}
         <span className="inline-block text-xs sm:text-sm font-extrabold uppercase tracking-widest text-violet-700 dark:text-violet-300 bg-violet-200/60 dark:bg-violet-800 px-4 py-2 rounded-xl border border-violet-300/40 dark:border-violet-600">
@@ -111,7 +120,7 @@ function InterviewDetails() {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl sm:rounded-3xl border border-violet-200 dark:border-violet-600 flex items-center gap-4 self-stretch md:self-auto justify-center shadow-sm">
+            <div className="bg-white dark:bg-slate-800 p-4 px-6 rounded-2xl sm:rounded-3xl border border-violet-200 dark:border-violet-600 flex items-center gap-4 self-stretch md:self-auto justify-center shadow-sm">
               <div className="text-center">
                 <div className="text-3xl sm:text-4xl font-black text-violet-900 dark:text-white">
                   {interview.overallScore || interview.score || "N/A"}
@@ -124,19 +133,19 @@ function InterviewDetails() {
           </div>
         </div>
 
-        {/* Performance Feedback Section (Strong -> Weak -> Suggestions) */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl sm:rounded-[28px] p-6 sm:p-8 shadow-xs border border-gray-100 dark:border-gray-700 mb-8">
+        {/* Performance Feedback Section */}
+        <div className="bg-white dark:bg-slate-800 rounded-2xl sm:rounded-[28px] p-6 sm:p-8 lg:p-10 shadow-xs border border-gray-100 dark:border-gray-700 mb-8">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2.5 bg-violet-50 dark:bg-violet-900 rounded-xl border border-violet-100 dark:border-violet-700">
               <FaCommentDots className="text-violet-600 dark:text-violet-300 text-lg sm:text-xl" />
             </div>
-            <h3 className="text-lg sm:text-xl font-black text-gray-900 dark:text-white">
+            <h3 className="text-lg sm:text-xl lg:text-2xl font-black text-gray-900 dark:text-white">
               Performance Feedback Summary
             </h3>
           </div>
 
           <div className="space-y-5">
-            <div className="bg-gray-50 dark:bg-slate-700/50 p-5 sm:p-6 rounded-2xl border border-gray-100 dark:border-gray-600">
+            <div className="bg-gray-50 dark:bg-slate-700/50 p-5 sm:p-6 lg:p-7 rounded-2xl border border-gray-100 dark:border-gray-600">
               <h4 className="text-base sm:text-lg font-bold text-violet-700 dark:text-violet-300 mb-2">
                 Strong Areas
               </h4>
@@ -145,7 +154,7 @@ function InterviewDetails() {
               </p>
             </div>
 
-            <div className="bg-gray-50 dark:bg-slate-700/50 p-5 sm:p-6 rounded-2xl border border-gray-100 dark:border-gray-600">
+            <div className="bg-gray-50 dark:bg-slate-700/50 p-5 sm:p-6 lg:p-7 rounded-2xl border border-gray-100 dark:border-gray-600">
               <h4 className="text-base sm:text-lg font-bold text-red-500 dark:text-red-400 mb-2">
                 Weak Areas
               </h4>
@@ -154,7 +163,7 @@ function InterviewDetails() {
               </p>
             </div>
 
-            <div className="bg-gray-50 dark:bg-slate-700/50 p-5 sm:p-6 rounded-2xl border border-gray-100 dark:border-gray-600">
+            <div className="bg-gray-50 dark:bg-slate-700/50 p-5 sm:p-6 lg:p-7 rounded-2xl border border-gray-100 dark:border-gray-600">
               <h4 className="text-base sm:text-lg font-bold text-amber-500 dark:text-amber-400 mb-2">
                 Final Suggestions
               </h4>
@@ -166,63 +175,135 @@ function InterviewDetails() {
         </div>
 
         {/* Question & Answer Breakdown Section */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl sm:rounded-[28px] p-6 sm:p-8 shadow-xs border border-gray-100 dark:border-gray-700">
-          <div className="flex items-center gap-3 mb-6">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl sm:rounded-[28px] p-6 sm:p-8 lg:p-10 shadow-xs border border-gray-100 dark:border-gray-700">
+          <div className="flex items-center gap-3 mb-8">
             <div className="p-2.5 bg-violet-50 dark:bg-violet-900 rounded-xl border border-violet-100 dark:border-violet-700">
               <FaQuestionCircle className="text-violet-600 dark:text-violet-300 text-lg sm:text-xl" />
             </div>
-            <h3 className="text-lg sm:text-xl font-black text-gray-900 dark:text-white">
+            <h3 className="text-lg sm:text-xl lg:text-2xl font-black text-gray-900 dark:text-white">
               Questions & Candidate Answers
             </h3>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-8">
             {interview.questions && interview.questions.length > 0 ? (
               interview.questions.map((q, index) => {
                 const answerText = q.answer || q.transcript;
                 const hasAnswer = answerText && answerText.trim() !== "";
 
                 return (
-                  <div 
-                    key={index} 
-                    className="bg-gray-50 dark:bg-slate-700/50 rounded-2xl p-5 sm:p-6 border border-gray-200 dark:border-gray-600 space-y-4"
+                  <div
+                    key={index}
+                    className="bg-gray-50 dark:bg-slate-700/50 rounded-2xl p-5 sm:p-7 lg:p-8 border border-gray-200 dark:border-gray-600 space-y-6"
                   >
-                    <div className="flex items-start gap-3">
-                      <span className="px-2.5 py-1 bg-violet-600 text-white font-bold text-xs rounded-lg shrink-0 mt-0.5">
-                        Q{index + 1}
-                      </span>
-                      <h4 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white leading-snug">
-                        {q.question || q}
-                      </h4>
+                    {/* Question Header & Inline Score Badge */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div className="flex items-start gap-3 flex-1">
+                        <span className="px-3 py-1 bg-violet-600 text-white font-bold text-xs sm:text-sm rounded-lg shrink-0 mt-0.5">
+                          Q{index + 1}
+                        </span>
+                        <h4 className="text-base sm:text-lg lg:text-xl font-bold text-gray-900 dark:text-white leading-snug">
+                          {q.question || q}
+                        </h4>
+                      </div>
+
+                      <div className="self-start sm:self-center shrink-0 bg-white dark:bg-slate-900 px-4 py-2 rounded-xl border border-violet-200 dark:border-slate-700 shadow-xs flex items-center gap-2">
+                        <span className="text-xs font-extrabold uppercase tracking-wider text-violet-700 dark:text-violet-300">
+                          Score:
+                        </span>
+                        <span className="text-base sm:text-lg font-black text-gray-900 dark:text-white">
+                          {q.score ?? "N/A"}
+                          <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">/10</span>
+                        </span>
+                      </div>
                     </div>
 
-                    <div className="pl-0 sm:pl-9 border-t border-gray-200 dark:border-gray-600/60 pt-4">
+                    {/* Candidate Answer Box */}
+                    <div className="border-t border-gray-200 dark:border-gray-600/60 pt-4">
                       {hasAnswer ? (
-                        <>
-                          <div className="flex items-center gap-2 mb-1.5">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
                             <FaCheckCircle className="text-emerald-500 text-xs shrink-0" />
                             <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
                               Candidate Answer:
                             </span>
                           </div>
-                          <p className="text-sm sm:text-base text-gray-700 dark:text-gray-200 bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-200 dark:border-slate-700 italic leading-relaxed">
+                          <p className="text-sm sm:text-base text-gray-700 dark:text-gray-200 bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-xl border border-gray-200 dark:border-slate-700 italic leading-relaxed">
                             &ldquo;{answerText}&rdquo;
                           </p>
-                        </>
+                        </div>
                       ) : (
-                        <>
-                          <div className="flex items-center gap-2 mb-1.5">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
                             <FaExclamationCircle className="text-amber-500 text-xs shrink-0" />
                             <span className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
                               Candidate Answer:
                             </span>
                           </div>
-                          <p className="text-sm sm:text-base text-gray-400 dark:text-gray-400 bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-200 dark:border-slate-700 italic leading-relaxed">
+                          <p className="text-sm sm:text-base text-gray-400 dark:text-gray-400 bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-xl border border-gray-200 dark:border-slate-700 italic leading-relaxed">
                             No answer provided
                           </p>
-                        </>
+                        </div>
                       )}
                     </div>
+
+                    {/* Merits & Demerits Full-Width Side-by-Side Cards */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
+                      {/* Merits Card */}
+                      <div className="bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-2xl border border-emerald-200/60 dark:border-emerald-950/60 shadow-xs flex flex-col justify-start min-h-[160px]">
+                        <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-100 dark:border-slate-800">
+                          <FaPlusCircle className="text-emerald-500 text-sm shrink-0" />
+                          <h5 className="text-sm sm:text-base font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                            Merits
+                          </h5>
+                        </div>
+                        {q.merits && q.merits.length > 0 ? (
+                          <ul className="space-y-2.5 flex-1">
+                            {q.merits.map((item, meritIndex) => (
+                              <li
+                                key={meritIndex}
+                                className="text-sm sm:text-base font-bold text-gray-800 dark:text-gray-100 flex items-start gap-2.5 leading-snug"
+                              >
+                                <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 mt-1.5 shrink-0"></span>
+                                <span>{item}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="text-sm sm:text-base font-medium text-gray-400 dark:text-gray-500 italic my-auto">
+                            No merits recorded.
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Demerits Card */}
+                      <div className="bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-2xl border border-red-200/60 dark:border-red-950/60 shadow-xs flex flex-col justify-start min-h-[160px]">
+                        <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-100 dark:border-slate-800">
+                          <FaMinusCircle className="text-red-500 text-sm shrink-0" />
+                          <h5 className="text-sm sm:text-base font-black uppercase tracking-wider text-red-500 dark:text-red-400">
+                            Demerits
+                          </h5>
+                        </div>
+                        {q.demerits && q.demerits.length > 0 ? (
+                          <ul className="space-y-2.5 flex-1">
+                            {q.demerits.map((item, demeritIndex) => (
+                              <li
+                                key={demeritIndex}
+                                className="text-sm sm:text-base font-bold text-gray-800 dark:text-gray-100 flex items-start gap-2.5 leading-snug"
+                              >
+                                <span className="inline-block w-2 h-2 rounded-full bg-red-500 mt-1.5 shrink-0"></span>
+                                <span>{item}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="text-sm sm:text-base font-medium text-gray-400 dark:text-gray-500 italic my-auto">
+                            No demerits recorded.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
                   </div>
                 );
               })

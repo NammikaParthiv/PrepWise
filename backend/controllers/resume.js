@@ -87,7 +87,7 @@ export const addResume = async (req, res) => {
         `;
 
     const result = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.5-flash-lite",
       contents: prompt,
     });
 
@@ -140,15 +140,38 @@ export const addResume = async (req, res) => {
 
 export const resumeHistory = async (req, res) => {
   try {
-    let resumes = await Resume.find({ user: req.user._id }).sort({
-      createdAt: -1,
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+    const limit = Math.min(parseInt(req.query.limit) || 6, 50);
+
+    const skip = (page - 1) * limit;
+
+    const [resumes, totalResumes] = await Promise.all([
+      Resume.find({ user: req.user._id })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+
+      Resume.countDocuments({ user: req.user._id }),
+    ]);
+
+    const totalPages = Math.ceil(totalResumes / limit);
+
+    return res.status(200).json({
+      msg: "Your Previous History",
+      resumes,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalItems: totalResumes,
+        limit,
+      },
     });
-    return res
-      .status(200)
-      .json({ msg: "Your Previous History", resumes: resumes });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ msg: "Server Error", error: error.message });
+    res.status(500).json({
+      msg: "Server Error",
+      error: error.message,
+    });
   }
 };
 

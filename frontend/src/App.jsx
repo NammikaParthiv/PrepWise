@@ -26,7 +26,7 @@ import ResetPassword from "./pages/ResetPassword";
 function App() {
   const { user } = useAuth();
   const location = useLocation();
-  const hideNavbar = ["/login","/register","/","/u/interview_simulator/session","/forgot-password","/reset-password"];
+  const hideNavbar = ["/login","/register","/","/u/interview_simulator/v-session","/u/interview_simulator/w-session","/forgot-password","/reset-password"];
   const showNavbar = !hideNavbar.includes(location.pathname);
   return (
       <div className="min-h-screen bg-white dark:bg-slate-900 text-black dark:text-white transition-colors duration-300">

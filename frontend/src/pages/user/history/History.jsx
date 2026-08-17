@@ -22,27 +22,82 @@ const parseDateTime = (dateString) => {
 
 function History() {
   const [activeTab, setActiveTab] = useState("resume");
+
   const [loading, setLoading] = useState(true);
+  const [pageLoading, setPageLoading] = useState(false);
+
   const [resumeData, setResumeData] = useState([]);
   const [interviewData, setInterviewData] = useState([]);
+
+  const [resumePage, setResumePage] = useState(1);
+  const [interviewPage, setInterviewPage] = useState(1);
+
+  const [resumePagination, setResumePagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+  });
+
+  const [interviewPagination, setInterviewPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+  });
+
+  const LIMIT = 6;
 
   useEffect(() => {
     let isMounted = true;
 
     const fetchHistory = async () => {
       try {
-        const [resumeRes, interviewRes] = await Promise.all([
-          axios.get("/api/resume_analyser/resume_history").catch(() => ({ data: { resumes: [] } })),
-          axios.get("/api/interview/history").catch(() => ({ data: { interviews: [] } }))
-        ]);
+        setPageLoading(true);
+
+        if (activeTab === "resume") {
+          const response = await axios.get(
+            `/api/resume_analyser/resume_history?page=${resumePage}&limit=${LIMIT}`
+          );
+
+          if (isMounted) {
+            setResumeData(response.data?.resumes || []);
+            setResumePagination(
+              response.data?.pagination || {
+                currentPage: resumePage,
+                totalPages: 1,
+                totalItems: 0,
+              }
+            );
+          }
+        } else {
+          const response = await axios.get(
+            `/api/interview/history?page=${interviewPage}&limit=${LIMIT}`
+          );
+
+          if (isMounted) {
+            setInterviewData(response.data?.interviews || []);
+            setInterviewPagination(
+              response.data?.pagination || {
+                currentPage: interviewPage,
+                totalPages: 1,
+                totalItems: 0,
+              }
+            );
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch history:", error);
 
         if (isMounted) {
-          setResumeData(resumeRes.data?.resumes || []);
-          setInterviewData(interviewRes.data?.interviews || []);
+          if (activeTab === "resume") {
+            setResumeData([]);
+          } else {
+            setInterviewData([]);
+          }
         }
       } finally {
         if (isMounted) {
           setLoading(false);
+          setPageLoading(false);
         }
       }
     };
@@ -52,7 +107,7 @@ function History() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [activeTab, resumePage, interviewPage]);
 
   const bgClass =
     activeTab === "resume"
@@ -73,7 +128,7 @@ function History() {
 
         <div className="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-8 mb-12 sm:mb-16">
           <button
-            onClick={() => setActiveTab("resume")}
+            onClick={() => { setActiveTab("resume"); setResumePage(1); }}
             className={`w-full sm:w-64 px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl text-sm sm:text-base font-bold transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer border
             ${
               activeTab === "resume"
@@ -85,7 +140,7 @@ function History() {
           </button>
 
           <button
-            onClick={() => setActiveTab("interview")}
+            onClick={() => { setActiveTab("interview"); setInterviewPage(1); }}
             className={`w-full sm:w-64 px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl text-sm sm:text-base font-bold transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer border
             ${
               activeTab === "interview"
@@ -104,43 +159,63 @@ function History() {
             </div>
           </div>
         ) : activeTab === "resume" ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 justify-items-center">
-            {resumeData.length > 0 ? (
-              resumeData.map((item) => (
-                <ResumeCard
-                  key={item._id}
-                  id={item._id}
-                  score={item.score}
-                  role={item.job_role}
-                  date={item.createdAt}
-                />
-              ))
-            ) : (
-              <div className="col-span-full text-center py-16 bg-white dark:bg-slate-800 rounded-3xl border border-dashed border-gray-300 dark:border-gray-600 w-full max-w-2xl px-4">
-                <p className="text-xl sm:text-2xl font-bold text-gray-500 dark:text-gray-400">
-                  No Resume History Found
-                </p>
-              </div>
+          <div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 justify-items-center">
+              {resumeData.length > 0 ? (
+                resumeData.map((item) => (
+                  <ResumeCard
+                    key={item._id}
+                    id={item._id}
+                    score={item.score}
+                    role={item.job_role}
+                    date={item.createdAt}
+                  />
+                ))
+              ) : (
+                <div className="col-span-full text-center py-16 bg-white dark:bg-slate-800 rounded-3xl border border-dashed border-gray-300 dark:border-gray-600 w-full max-w-2xl px-4 mx-auto">
+                  <p className="text-xl sm:text-2xl font-bold text-gray-500 dark:text-gray-400">
+                    No Resume History Found
+                  </p>
+                </div>
+              )}
+            </div>
+            {resumePagination.totalPages > 1 && (
+              <Pagination
+                currentPage={resumePage}
+                totalPages={resumePagination.totalPages}
+                onPageChange={setResumePage}
+                loading={pageLoading}
+              />
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 justify-items-center">
-            {interviewData.length > 0 ? (
-              interviewData.map((item) => (
-                <InterviewCard
-                  key={item._id}
-                  id={item._id}
-                  score={item.overallScore}
-                  role={item.job_role}
-                  date={item.createdAt}
-                />
-              ))
-            ) : (
-              <div className="col-span-full text-center py-16 bg-white dark:bg-slate-800 rounded-3xl border border-dashed border-gray-300 dark:border-gray-600 w-full max-w-2xl px-4">
-                <p className="text-xl sm:text-2xl font-bold text-gray-500 dark:text-gray-400">
-                  No Interview History Found
-                </p>
-              </div>
+          <div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 justify-items-center">
+              {interviewData.length > 0 ? (
+                interviewData.map((item) => (
+                  <InterviewCard
+                    key={item._id}
+                    id={item._id}
+                    score={item.overallScore}
+                    role={item.job_role}
+                    date={item.createdAt}
+                  />
+                ))
+              ) : (
+                <div className="col-span-full text-center py-16 bg-white dark:bg-slate-800 rounded-3xl border border-dashed border-gray-300 dark:border-gray-600 w-full max-w-2xl px-4 mx-auto">
+                  <p className="text-xl sm:text-2xl font-bold text-gray-500 dark:text-gray-400">
+                    No Interview History Found
+                  </p>
+                </div>
+              )}
+            </div>
+            {interviewPagination.totalPages > 1 && (
+              <Pagination
+                currentPage={interviewPage}
+                totalPages={interviewPagination.totalPages}
+                onPageChange={setInterviewPage}
+                loading={pageLoading}
+              />
             )}
           </div>
         )}
@@ -161,7 +236,6 @@ export function ResumeCard({ id, score, role, date }) {
       dark:from-orange-700 dark:via-orange-600 dark:to-orange-700 
       border border-orange-300 dark:border-orange-600 
       rounded-3xl sm:rounded-4xl p-6 shadow-md hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
-      
       <div>
         <div className="flex justify-between items-baseline border-b border-orange-300 dark:border-orange-500 pb-3 mb-4">
           <span className="text-xl sm:text-2xl font-black text-orange-900 dark:text-white">{dateStr}</span>
@@ -205,7 +279,6 @@ export function InterviewCard({ id, score, role, date }) {
       dark:from-violet-700 dark:via-violet-600 dark:to-violet-700 
       border border-violet-300 dark:border-violet-600 
       rounded-3xl sm:rounded-4xl p-6 shadow-md hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
-      
       <div>
         <div className="flex justify-between items-baseline border-b border-violet-300 dark:border-violet-500 pb-3 mb-4">
           <span className="text-xl sm:text-2xl font-black text-violet-900 dark:text-white">{dateStr}</span>
@@ -234,6 +307,52 @@ export function InterviewCard({ id, score, role, date }) {
       >
         <span className="text-sm">View Details</span>
         <span className="text-sm transform group-hover:translate-x-1 transition-transform duration-200">→</span>
+      </button>
+    </div>
+  );
+}
+
+function Pagination({
+  currentPage,
+  totalPages,
+  onPageChange,
+  loading,
+}) {
+  return (
+    <div className="flex justify-center items-center gap-2 mt-10">
+      <button
+        disabled={currentPage === 1 || loading}
+        onClick={() => onPageChange(currentPage - 1)}
+        className="px-4 py-2 rounded-xl font-bold bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-slate-700 transition cursor-pointer"
+      >
+        ←
+      </button>
+
+      {Array.from({ length: totalPages }, (_, index) => {
+        const page = index + 1;
+
+        return (
+          <button
+            key={page}
+            disabled={loading}
+            onClick={() => onPageChange(page)}
+            className={`w-10 h-10 rounded-xl font-bold transition cursor-pointer ${
+              currentPage === page
+                ? "bg-violet-600 text-white"
+                : "bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-slate-700"
+            }`}
+          >
+            {page}
+          </button>
+        );
+      })}
+
+      <button
+        disabled={currentPage === totalPages || loading}
+        onClick={() => onPageChange(currentPage + 1)}
+        className="px-4 py-2 rounded-xl font-bold bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-slate-700 transition cursor-pointer"
+      >
+        →
       </button>
     </div>
   );

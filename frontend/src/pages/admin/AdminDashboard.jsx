@@ -5,22 +5,24 @@ import add_reference_pic from "../../assets/add_reference.png";
 
 function HomePage() {
   return (
-    <div className="min-h-screen transition-all duration-500 bg-linear-to-br from-blue-50 via-white to-indigo-100 dark:from-slate-900 dark:via-indigo-950 dark:to-slate-900 pt-16 sm:pt-32 overflow-x-hidden">
-      <div className="pt-10 pb-10 sm:pt-30 sm:pb-25 px-6 sm:px-10 text-center border-2 sm:border-4 rounded-3xl sm:rounded-4xl mx-4 sm:mx-40 shadow-2xl border-indigo-500 bg-amber-100 dark:border-green-500 dark:bg-indigo-800">
-        <h1 className="text-4xl sm:text-7xl font-extrabold text-slate-900 dark:text-white">
-          Welcome<span className="text-blue-400"> Admin</span>
+    <div className="min-h-screen transition-all duration-500 bg-linear-to-r from-indigo-300 via-sky-100 to-blue-300 dark:from-slate-900 dark:via-indigo-950 dark:to-slate-900 pt-16 sm:pt-32 overflow-x-hidden">
+
+      <div className="pt-10 pb-10 sm:pt-30 sm:pb-25 px-6 sm:px-10 text-center border-2 sm:border-4 rounded-3xl sm:rounded-4xl mx-4 sm:mx-40 shadow-2xl border-slate-900 bg-linear-to-br from-indigo-600 via-violet-600 to-purple-700 dark:border-green-500 dark:bg-indigo-800">
+        <h1 className="text-4xl sm:text-7xl font-extrabold text-white tracking-tight">
+          Welcome<span className="text-amber-300 dark:text-blue-400"> Admin</span>
         </h1>
 
-        <p className="text-xl sm:text-2xl font-semibold mt-4 sm:mt-6 text-red-700 dark:text-red-200">
+        <p className="text-xl sm:text-2xl font-semibold mt-4 sm:mt-6 text-red-200 dark:text-red-200">
           Control Center for Platform Management
         </p>
 
-        <p className="text-sm sm:text-lg max-w-4xl mx-auto mt-4 sm:mt-6 leading-relaxed text-gray-700 dark:text-gray-300">
+        <p className="text-sm sm:text-lg max-w-4xl mx-auto mt-4 sm:mt-6 leading-relaxed text-indigo-50/90 dark:text-gray-300">
           Manage users, monitor activity, update content, and keep PrepWise
           running smoothly with powerful admin tools.
         </p>
       </div>
 
+      {/* Feature Cards Section */}
       <div className="flex flex-col md:flex-row justify-center items-center gap-8 md:gap-20 px-6 sm:px-20 mt-12 md:mt-24">
         <FeatureCard
           gradient="from-purple-400 to-purple-600"
@@ -45,24 +47,26 @@ function HomePage() {
         />
       </div>
 
+      {/* Catchphrase Section */}
       <div className="text-center py-12 sm:py-20">
-        <p className="mt-5 text-lg sm:text-xl text-gray-700 dark:text-gray-300 font-medium">
+        <p className="mt-5 text-lg sm:text-xl text-indigo-900/80 dark:text-gray-300 font-medium">
           • Analyze • Practice • Improve • Get Hired •
         </p>
       </div>
 
+      {/* Footer Section */}
       <footer className="border-t py-12 text-center border-gray-300 text-gray-700 dark:border-gray-700 dark:text-gray-300 px-4">
         <h3 className="text-3xl font-bold">
-          Prep<span className="text-blue-400">Wise</span>
+          Prep<span className="text-blue-500 dark:text-blue-400">Wise</span>
         </h3>
         <p className="mt-3">AI-Powered Interview Preparation Platform</p>
-        <p className="mt-2">Built with React • Node.js • MongoDB • Gemini AI</p>
+        <p className="mt-2">Built with React • Node.js • MongoDB • Redis • BullMQ</p>
         <div className="flex flex-wrap justify-center gap-6 sm:gap-10 mt-6">
           <a
             href="https://github.com/NammikaParthiv"
             target="_blank"
             rel="noreferrer"
-            className="text-blue-400 hover:underline"
+            className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
           >
             💻GitHub
           </a>
@@ -70,13 +74,13 @@ function HomePage() {
             href="https://www.linkedin.com/in/nammika-parthiv-01478834a/"
             target="_blank"
             rel="noreferrer"
-            className="text-blue-400 hover:underline"
+            className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
           >
             🔗LinkedIn
           </a>
           <a
             href="mailto:nparthiv064.btech2023@ece.nitrr.ac.in"
-            className="text-blue-400 hover:underline"
+            className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
           >
             📧Email
           </a>
@@ -112,6 +116,7 @@ function FeatureCard({ gradient, heading, description, image, link }) {
         transition-all
         duration-300
         border-2
+        border-gray-200
         dark:bg-slate-800
         dark:border-slate-700
       "

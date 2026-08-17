@@ -124,9 +124,6 @@ function StudyPlanner() {
     <div className="min-h-screen bg-linear-to-br from-emerald-50/80 via-teal-50/40 to-green-100/60 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950 px-4 sm:px-6 pb-16">
       <div className="max-w-3xl sm:max-w-5xl mx-auto pt-20 sm:pt-28">
         <div className="text-center mb-8 sm:mb-12">
-          <span className="inline-block text-xs sm:text-sm font-extrabold uppercase tracking-wider text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/80 px-3.5 py-1.5 rounded-full border border-emerald-200 dark:border-emerald-800/60 mb-3 shadow-xs">
-            Planner
-          </span>
           <h1 className="text-3xl sm:text-6xl font-black text-slate-900 dark:text-white tracking-tight">
             Set Your Goals 🚀
           </h1>

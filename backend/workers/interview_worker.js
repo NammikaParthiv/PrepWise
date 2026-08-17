@@ -9,11 +9,12 @@ const interviewWorker = new Worker(
   
   async (job) => {  
     const { job_role } = job.data;
+    const normalizedRole = job_role.trim().toLowerCase();
     console.log(`Generating questions for ${job_role}`);
     console.log(job.data);
     try {
       const prompt = `
-      Generate exactly 3 realistic technical interview question for a B.Tech graduating student applying for the job role: ${job_role}.
+      Generate exactly 3 realistic technical interview questions for a B.Tech graduating student applying for the job role: ${job_role}.
 
       The question should feel like something a candidate could actually face in a real company placement interview.
 
@@ -30,7 +31,7 @@ const interviewWorker = new Worker(
       - Avoid vague, repetitive, trivial, or overly academic questions.
       - Do not include the answer or explanation.
 
-      Return ONLY a valid JSON array containing exactly one question string.
+      Return ONLY a valid JSON array containing exactly 3 question strings.
 
       Example:
       [
@@ -40,7 +41,7 @@ const interviewWorker = new Worker(
       Job Role: ${job_role}
       `;
       const result = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-3.5-flash-lite",
         contents: prompt,
       });
 
@@ -51,7 +52,6 @@ const interviewWorker = new Worker(
         .replace(/```/g, "")
         .trim();
       const questions = JSON.parse(cleaned);
-      const normalizedRole = job_role.trim().toLowerCase();
       await redisClient.set(
         `interview:${normalizedRole}`,
         JSON.stringify(questions),

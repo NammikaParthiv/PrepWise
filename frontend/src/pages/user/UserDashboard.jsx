@@ -7,24 +7,25 @@ import { useNavigate } from "react-router-dom";
 
 function HomePage() {
   return (
-    <div className="min-h-screen transition-all duration-500 bg-linear-to-br from-blue-50 via-white to-indigo-100 dark:from-slate-900 dark:via-indigo-950 dark:to-slate-900 overflow-x-hidden">
+    <div className="min-h-screen transition-all duration-500 bg-linear-to-r from-indigo-300 via-sky-100 to-blue-300 dark:from-slate-900 dark:via-indigo-950 dark:to-slate-900 overflow-x-hidden">
       <div className="px-4 sm:px-8 lg:px-16 pt-8 sm:pt-12 max-w-7xl mx-auto">
         
-        <div className="pt-12 pb-10 sm:pt-28 sm:pb-18 px-6 sm:px-10 text-center border-2 sm:border-4 rounded-3xl sm:rounded-4xl my-6 sm:my-10 shadow-2xl border-blue-500 bg-amber-100 dark:border-green-500 dark:bg-indigo-800">
-          <h1 className="text-5xl sm:text-7xl lg:text-8xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-            Prep<span className="text-blue-500 dark:text-blue-400">Wise</span>
+        <div className="pt-12 pb-10 sm:pt-28 sm:pb-18 px-6 sm:px-10 text-center border-2 sm:border-4 rounded-3xl sm:rounded-4xl my-6 sm:my-10 shadow-2xl border-slate-900 dark:border-green-500 bg-linear-to-br from-indigo-600 via-violet-600 to-purple-700 dark:bg-indigo-800">
+          <h1 className="text-5xl sm:text-7xl lg:text-8xl font-extrabold text-white tracking-tight">
+            Prep<span className="text-amber-300 dark:text-blue-400">Wise</span>
           </h1>
 
-          <p className="text-xl sm:text-3xl font-semibold mt-4 sm:mt-6 text-blue-700 dark:text-blue-200">
+          <p className="text-xl sm:text-3xl font-semibold mt-4 sm:mt-6 text-indigo-100 dark:text-blue-200">
             AI-Powered Interview Preparation Platform
           </p>
 
-          <p className="text-sm sm:text-lg max-w-4xl mx-auto mt-4 sm:mt-6 leading-relaxed text-gray-700 dark:text-gray-300">
+          <p className="text-sm sm:text-lg max-w-4xl mx-auto mt-4 sm:mt-6 leading-relaxed text-indigo-50/90 dark:text-gray-300">
             Analyze resumes, practice interviews, organize your preparation
             journey and track your progress — all in one place.
           </p>
         </div>
 
+        {/* Explore Features Section */}
         <div className="px-2 sm:px-6 pb-16 sm:pb-20">
           <h2 className="text-3xl sm:text-5xl font-bold text-center mb-10 sm:mb-16 text-slate-900 dark:text-white">
             Explore Features
@@ -69,11 +70,12 @@ function HomePage() {
           </div>
         </div>
 
+        {/* Footer Catchphrase Section */}
         <div className="text-center py-12 sm:py-20">
           <h2 className="text-3xl sm:text-5xl font-bold text-slate-900 dark:text-white">
             Your Journey Starts Here
           </h2>
-          <p className="mt-4 sm:mt-5 text-base sm:text-xl text-gray-700 dark:text-gray-300 font-medium">
+          <p className="mt-4 sm:mt-5 text-base sm:text-xl text-indigo-900/80 dark:text-gray-300 font-medium">
             • Analyze • Practice • Improve • Get Hired •
           </p>
         </div>

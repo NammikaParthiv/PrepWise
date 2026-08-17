@@ -38,7 +38,7 @@ export const generateInterview = async (req, res) => {
 
       const interview = await Interview.create({
         user: req.user._id,
-        job_role,
+        job_role: normalizeRole,
         questions: questions.map((q)=>({
           question:q,
         })),
@@ -53,7 +53,7 @@ export const generateInterview = async (req, res) => {
 
     const interview = await Interview.create({
       user: req.user._id,
-      job_role,
+      job_role: normalizeRole,
       questions:[],
       status:"waiting",
     });
@@ -132,72 +132,96 @@ export const submitInterview = async (req, res) => {
       });
     }
 
-    interview.questions.forEach((q, index) => {
-      q.answer = answers[index]?.answer || "";
-    });
+    const questionsWithAnswers = interview.questions.map((q, index) => ({
+       question: q.question,
+       candidateAnswer: answers[index]?.answer?.trim() || ""
+       }));
 
-    let prompt = `
-      You are a senior technical interviewer evaluating a candidate's mock interview.
+        let prompt = `
+        You are a senior technical interviewer evaluating a candidate's mock interview.
+        Evaluate ONLY what the candidate actually said. Never assume or invent knowledge.
 
-      Evaluate the candidate honestly and based ONLY on what they actually answered.
+        CORE RULE:
+        For every question, "merits" + "demerits" together must represent a COMPLETE, technically correct interview answer to that question, including definitions, concepts, reasoning, steps, implementation/application, examples, and complexity wherever relevant.
 
-      Rules:
-      - Give realistic scores. Do not inflate or unnecessarily punish.
-      - Give credit for correct/partially correct knowledge.
-      - Do not assume knowledge that was not demonstrated.
-      - "merits" = specific things the candidate correctly explained.
-      - "demerits" = important things missing, incorrect, or unclear that should have been included.
-      - The combination of merits and demerits should show the candidate how to make the answer complete.
-      - Do not use generic merits such as "Good answer".
-      - Do not invent information.
-      - Minor English/grammar mistakes should not heavily affect technical scoring, but mention communication/English issues in suggestions if they affect clarity.
-      - strongAreas = technical topics the candidate explained well.
-      - weakAreas = technical topics the candidate could not explain clearly or completely.
-      - suggestions = specific improvements for the weak areas, including well-known YouTube channels/resources where the candidate can learn those topics. Do not invent channel names.
-      - Do not force a fixed number of merits, demerits, or areas. Empty arrays are allowed.
+        Rules:
+        - merits = ONLY correct technical information actually demonstrated by the candidate.
+        - demerits = the remaining information needed to make the answer complete and technically correct.
+        - Demerits must contain the ACTUAL CORRECT CONTENT the candidate should know, not merely statements such as "should explain X" or "needs to mention Y".
+        - If a concept requires explaining HOW to apply or implement it, include the actual steps/logic in demerits.
+        - If the candidate fails to explain an application, algorithm, process, example, implementation, or reasoning, provide that complete missing explanation in demerits.
+        - Do NOT assume the candidate knows something just because they mentioned the concept.
+        - Never put an ideal-answer point in merits unless the candidate actually demonstrated it.
+        - Do not repeat the same information in merits and demerits.
+        - If the answer is partially correct, preserve the candidate's correct points in merits and provide the remaining complete answer in demerits.
+        - If the answer is completely correct and complete, demerits may be [].
+        - If there is NO ANSWER:
+          - score = 0
+          - merits = []
+          - demerits = the COMPLETE technically correct answer that the candidate should have given.
+        - For unanswered questions, do not merely say "No answer provided" or list topic names.
+        - Demerits must be useful for learning: a candidate should be able to read merits + demerits and understand how to answer the question correctly in an interview.
+        - Include relevant examples, steps, implementation logic, use cases, trade-offs, and time/space complexity when they are important to the question.
+        - Do not add irrelevant details that are not expected for the question.
+        - Do not use generic merits such as "Good answer".
+        - Minor English/grammar mistakes should not significantly affect technical scoring.
+        - strongAreas = topics the candidate demonstrated well.
+        - weakAreas = topics where the candidate's knowledge was incomplete, incorrect, or unclear.
+        - suggestions = specific improvements for weak areas and reliable learning resources. Never invent resources.
 
-      Return ONLY valid JSON with exactly this structure:
+        SCORING:
+        - score: 0-10
+        - 0 = no answer, irrelevant answer, or no meaningful correct knowledge.
+        - 1-3 = very limited understanding.
+        - 4-6 = partial understanding with important missing concepts.
+        - 7-8 = good understanding with some missing details.
+        - 9 = very strong and nearly complete.
+        - 10 = correct, complete, relevant, and clearly explained.
+        - Score based on correctness, completeness, and importance of the demonstrated knowledge, NOT by counting merits/demerits.
+        - overallScore: 0-100 based on performance across all questions.
 
-      {
-        "overallScore": 85,
-        "strongAreas": "...",
-        "weakAreas": "...",
-        "suggestions": "...",
-        "questions": [
-          {
-            "score": 8,
-            "merits": [
-              "Correctly explained ...",
-              "Accurately mentioned ..."
-            ],
-            "demerits": [
-              "Did not explain ...",
-              "Missed ..."
-            ]
-          }
-        ]
-      }
+        OUTPUT:
 
-      Output rules:
-      - overallScore: number from 0 to 100.
-      - question score: number from 0 to 10.
-      - strongAreas, weakAreas, suggestions: strings.
-      - merits and demerits: arrays of strings.
-      - Never create objects inside merits or demerits.
-      - No markdown, code blocks, explanations, or extra fields.
+        Return ONLY valid JSON:
 
-      Interview:
-      `;
+        {
+          "overallScore": 85,
+          "strongAreas": "...",
+          "weakAreas": "...",
+          "suggestions": "...",
+          "questions": [
+            {
+              "score": 8,
+              "merits": [
+                "Correctly explained ..."
+              ],
+              "demerits": [
+                "The complete missing explanation is ..."
+              ]
+            }
+          ]
+        }
 
-      interview.questions.forEach((q, i) => {
-        prompt += `
-      Question ${i + 1}: ${q.question}
-      Candidate Answer: ${q.answer}
-      `;
-      });
+        STRICT RULES:
+        - No markdown.
+        - No explanations outside JSON.
+        - No extra fields.
+        - merits and demerits must contain ONLY strings.
+        - Number of question objects MUST exactly match the number of questions.
+        - Keep the original question order.
+        - Never put information in merits that the candidate did not actually demonstrate.
+        - Demerits must contain the actual correct missing content, not just a description of what is missing.
+
+        INTERVIEW:
+
+        ${questionsWithAnswers.map((q, i) => `
+        Question ${i + 1}: ${q.question}
+        Candidate Answer: ${q.candidateAnswer || "[NO ANSWER PROVIDED]"}
+        `).join("\n")}
+        `;
 
     const result = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.5-flash-lite",
       contents: prompt,
     });
     if (!result || !result.text) {
@@ -239,20 +263,41 @@ export const submitInterview = async (req, res) => {
 
 export const interviewHistory = async (req, res) => {
   try {
-    const interviews = await Interview.find({
-      user: req.user._id,
-    }).sort({
-      createdAt: -1,
-    });
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+    const limit = Math.min(parseInt(req.query.limit) || 6, 50);
+
+    const skip = (page - 1) * limit;
+
+    const [interviews, totalInterviews] = await Promise.all([
+      Interview.find({
+        user: req.user._id,
+      })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+
+      Interview.countDocuments({
+        user: req.user._id,
+      }),
+    ]);
+
+    const totalPages = Math.ceil(totalInterviews / limit);
 
     res.status(200).json({
       msg: "Interview History",
       interviews,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalItems: totalInterviews,
+        limit,
+      },
     });
   } catch (error) {
     console.log(error);
     res.status(500).json({
       msg: "Server Error",
+      error: error.message,
     });
   }
 };

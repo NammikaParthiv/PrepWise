@@ -48,12 +48,7 @@ function Profile() {
   const handleSaveChanges = async () => {
     try {
       let res;
-      const payload = {
-        name,
-        college,
-        phone,
-        gender,
-      };
+      const payload = { name, college, phone, gender };
 
       if (photoFile) {
         const formData = new FormData();
@@ -112,160 +107,189 @@ function Profile() {
         
         {/* Header Section */}
         <div className="text-center mb-8 sm:mb-12">
-          <h1 className="text-3xl sm:text-5xl font-extrabold">My Profile</h1>
-          <p className="text-sm sm:text-lg text-gray-700 dark:text-gray-300 mt-2 sm:mt-3 px-2">
+          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight">My Profile</h1>
+          <p className="text-sm sm:text-lg text-gray-700 dark:text-gray-300 mt-2 sm:mt-3 px-2 font-medium">
             Manage your account and track your PrepWise achievements.
           </p>
         </div>
 
         {/* Profile Card Container */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl shadow-2xl p-6 sm:p-10 flex flex-col lg:flex-row items-center lg:items-start justify-between relative gap-8 lg:gap-0">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl shadow-2xl p-6 sm:p-10 border border-gray-100 dark:border-slate-700">
           
-          {!isEditing && (
-            <button
-              className="absolute top-6 right-6 sm:top-8 sm:right-10 text-2xl sm:text-3xl hover:text-violet-500 transition cursor-pointer"
-              onClick={handleStartEditing}
-              title="Edit Profile"
-            >
-              ✏️
-            </button>
-          )}
-
-          {/* Profile Photo Section */}
-          <div className="w-full lg:w-1/3 flex flex-col items-center">
-            <img
-              src={
-                isEditing
-                  ? photoPreview ||
-                    (user?.profilePic_URL
-                      ? `http://localhost:2222${user.profilePic_URL}`
-                      : "/user.png")
-                  : user?.profilePic_URL
-                  ? `http://localhost:2222${user.profilePic_URL}`
-                  : "/user.png"
-              }
-              alt="Profile"
-              className="w-40 h-40 sm:w-52 sm:h-52 rounded-full border-4 border-violet-500 object-cover shadow-xl"
-            />
-
-            {isEditing && (
-              <div className="flex flex-col sm:flex-row lg:flex-col items-center gap-3 mt-6 w-full sm:w-auto">
-                <label className="w-full sm:w-auto px-5 py-2.5 sm:px-6 sm:py-3 text-center rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-semibold cursor-pointer transition shadow-md text-sm sm:text-base">
-                  📷 Change Photo
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handlePhotoChange}
-                  />
-                </label>
-
-                <button
-                  onClick={handleDeletePhoto}
-                  className="w-full sm:w-auto px-5 py-2.5 sm:px-6 sm:py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold transition shadow-md cursor-pointer text-sm sm:text-base"
-                >
-                  🗑 Delete Photo
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Profile Info Section */}
-          <div className="w-full lg:w-2/3 lg:pl-16">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-              <div>
-                <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-lg">Full Name</p>
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="text-xl sm:text-2xl font-bold border-b-2 border-violet-500 focus:outline-none w-full py-1 mt-1 bg-transparent text-black dark:text-white"
-                  />
-                ) : (
-                  <h2 className="text-2xl sm:text-3xl font-bold break-words">
-                    {user?.name || "User??"}
-                  </h2>
-                )}
-              </div>
-
-              <div>
-                <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-lg">Email</p>
-                <h2 className="text-lg sm:text-xl text-gray-500 cursor-not-allowed select-none pt-1 break-words">
-                  {user?.email || "xyz@gmail.com"}
-                </h2>
-              </div>
-
-              <div>
-                <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-lg">College</p>
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={college}
-                    onChange={(e) => setCollege(e.target.value)}
-                    className="text-lg sm:text-xl border-b-2 border-violet-500 focus:outline-none w-full py-1 mt-1 bg-transparent text-black dark:text-white"
-                  />
-                ) : (
-                  <h2 className="text-xl sm:text-2xl break-words">{user?.college || "Not specified"}</h2>
-                )}
-              </div>
-
-              <div>
-                <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-lg">Phone Number</p>
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={phone}
-                    placeholder="+91 XXXXXXXXXX"
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="text-lg sm:text-xl border-b-2 border-violet-500 focus:outline-none w-full py-1 mt-1 bg-transparent text-black dark:text-white"
-                  />
-                ) : (
-                  <h2 className="text-xl sm:text-2xl">{user?.phone || "+91 XXXXXXXXXX"}</h2>
-                )}
-              </div>
-
-              <div className="md:col-span-2">
-                <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-lg">Gender</p>
-                {isEditing ? (
-                  <select
-                    value={gender}
-                    onChange={(e) => setGender(e.target.value)}
-                    className="text-lg sm:text-xl border-b-2 border-violet-500 focus:outline-none w-full py-1 mt-1 bg-transparent text-black dark:text-white cursor-pointer"
-                  >
-                    <option value="Male" className="bg-white dark:bg-slate-800">Male</option>
-                    <option value="Female" className="bg-white dark:bg-slate-800">Female</option>
-                    <option value="Other" className="bg-white dark:bg-slate-800">Other</option>
-                    <option value="Prefer not to say" className="bg-white dark:bg-slate-800">Prefer not to say</option>
-                  </select>
-                ) : (
-                  <h2 className="text-xl sm:text-2xl">{user?.gender || "Prefer not to say"}</h2>
-                )}
-              </div>
+          <div className="flex flex-col lg:flex-row items-stretch gap-8 lg:gap-8">
+            
+            {/* Left Column: Profile Photo Section */}
+            <div className={`w-full lg:w-[26%] flex flex-col items-center lg:border-r border-gray-100 dark:border-slate-700 lg:pr-8 shrink-0 ${isEditing ? "justify-start pt-2" : "justify-center"}`}>
+              <img
+                src={
+                  isEditing
+                    ? photoPreview ||
+                      (user?.profilePic_URL
+                        ? `http://localhost:2222${user.profilePic_URL}`
+                        : "/user.png")
+                    : user?.profilePic_URL
+                    ? `http://localhost:2222${user.profilePic_URL}`
+                    : "/user.png"
+                }
+                alt="Profile"
+                className="w-48 h-48 sm:w-60 sm:h-60 rounded-full border-4 border-violet-500 object-cover shadow-2xl"
+              />
 
               {isEditing && (
-                <div className="md:col-span-2 flex flex-col sm:flex-row justify-end gap-3 sm:space-x-4 pt-4">
+                <div className="flex flex-col items-center gap-2.5 mt-5 w-full">
+                  <label className="w-full px-4 py-2 text-center rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-semibold cursor-pointer transition shadow-md text-sm">
+                    📷 Change Photo
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handlePhotoChange}
+                    />
+                  </label>
+
                   <button
-                    onClick={handleCancel}
-                    className="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-gray-400 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 font-semibold transition cursor-pointer"
+                    onClick={handleDeletePhoto}
+                    className="w-full px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold transition shadow-md cursor-pointer text-sm"
                   >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleSaveChanges}
-                    className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-semibold shadow-md transition cursor-pointer"
-                  >
-                    Save
+                    🗑 Delete Photo
                   </button>
                 </div>
               )}
             </div>
+
+            {/* Right Side: Split into ~65% Info Column and ~35% Secondary Column */}
+            <div className="w-full flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              
+              {/* ~65% Width Column (Name, Email, College stacked) */}
+              <div className="lg:col-span-7 flex flex-col gap-5">
+                
+                {/* Full Name */}
+                <div className="bg-gray-50 dark:bg-slate-900/50 p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-slate-700/60">
+                  <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm font-bold uppercase tracking-wider">Full Name</p>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="text-lg sm:text-xl font-bold border-b-2 border-violet-500 focus:outline-none w-full py-1 mt-2 bg-transparent text-black dark:text-white"
+                    />
+                  ) : (
+                    <h2 className="text-xl sm:text-2xl font-bold mt-1 break-words">
+                      {user?.name || "User??"}
+                    </h2>
+                  )}
+                </div>
+
+                {/* Email */}
+                <div className="bg-gray-50 dark:bg-slate-900/50 p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-slate-700/60">
+                  <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm font-bold uppercase tracking-wider">Email</p>
+                  <h2 className="text-lg sm:text-xl text-gray-500 dark:text-gray-400 cursor-not-allowed select-none mt-1 break-words font-medium">
+                    {user?.email || "xyz@gmail.com"}
+                  </h2>
+                </div>
+
+                {/* College */}
+                <div className="bg-gray-50 dark:bg-slate-900/50 p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-slate-700/60">
+                  <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm font-bold uppercase tracking-wider">College</p>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={college}
+                      onChange={(e) => setCollege(e.target.value)}
+                      className="text-lg sm:text-xl border-b-2 border-violet-500 focus:outline-none w-full py-1 mt-2 bg-transparent text-black dark:text-white"
+                    />
+                  ) : (
+                    <h2 className="text-lg sm:text-xl font-medium mt-1 break-words">{user?.college || "Not specified"}</h2>
+                  )}
+                </div>
+
+              </div>
+
+              {/* ~35% Width Column (Phone, Gender, and Emoji Edit Button in the corner) */}
+              <div className="lg:col-span-5 flex flex-col gap-5 justify-between h-full">
+                <div className="flex flex-col gap-5">
+                  
+                  {/* Phone Number */}
+                  <div className="bg-gray-50 dark:bg-slate-900/50 p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-slate-700/65">
+                    <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm font-bold uppercase tracking-wider">Phone Number</p>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        className="text-lg sm:text-xl border-b-2 border-violet-500 focus:outline-none w-full py-1 mt-2 bg-transparent text-black dark:text-white"
+                      />
+                    ) : (
+                      <h2 className={`text-lg sm:text-xl font-medium mt-1 ${!user?.phone || user?.phone === "+91 " ? "text-gray-400 dark:text-gray-500" : ""}`}>
+                        {user?.phone && user?.phone.trim() !== "+91" ? user.phone : "+91 "}
+                      </h2>
+                    )}
+                  </div>
+
+                  {/* Gender with Symbols & Prefer not to say */}
+                  <div className="bg-gray-50 dark:bg-slate-900/50 p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-slate-700/60">
+                    <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm font-bold uppercase tracking-wider">Gender</p>
+                    {isEditing ? (
+                      <select
+                        value={gender}
+                        onChange={(e) => setGender(e.target.value)}
+                        className="text-lg sm:text-xl border-b-2 border-violet-500 focus:outline-none w-full py-1 mt-2 bg-transparent text-black dark:text-white cursor-pointer"
+                      >
+                        <option value="Male" className="bg-white dark:bg-slate-800">♂️ Male</option>
+                        <option value="Female" className="bg-white dark:bg-slate-800">♀️ Female</option>
+                        <option value="Prefer not to say" className="bg-white dark:bg-slate-800">Prefer not to say</option>
+                      </select>
+                    ) : (
+                      <h2 className="text-lg sm:text-xl font-medium mt-1">
+                        {user?.gender === "Male"
+                          ? "♂️ Male"
+                          : user?.gender === "Female"
+                          ? "♀️ Female"
+                          : (user?.gender || "Prefer not to say")}
+                      </h2>
+                    )}
+                  </div>
+
+                </div>
+
+                {/* Edit Button with only the emoji in the right corner (or Save/Cancel buttons when editing) */}
+                <div className="flex justify-end pt-2">
+                  {isEditing ? (
+                    <div className="flex gap-2 w-full">
+                      <button
+                        onClick={handleCancel}
+                        className="flex-1 px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 font-semibold transition cursor-pointer text-sm shadow-xs"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleSaveChanges}
+                        className="flex-1 px-4 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-semibold shadow-md transition cursor-pointer text-sm"
+                      >
+                        Save
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      className="p-3 rounded-xl bg-violet-50 dark:bg-slate-700 hover:bg-violet-100 dark:hover:bg-slate-600 transition cursor-pointer text-xl shadow-xs"
+                      onClick={handleStartEditing}
+                      title="Edit Profile"
+                    >
+                      ✏️
+                    </button>
+                  )}
+                </div>
+
+              </div>
+
+            </div>
+
           </div>
         </div>
 
-        {/* Achievements Section */}
+        {/* Achievements Section - Sizes kept identical to original */}
         <div className="mt-16 sm:mt-20">
-          <h2 className="text-3xl sm:text-4xl font-bold text-center mb-8 sm:mb-12">🏆 Achievements</h2>
+          <h2 className="text-3xl sm:text-5xl font-extrabold text-center mb-8 sm:mb-12">🏆 Achievements</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-10">
             <AchievementCard
               icon="🎤"
