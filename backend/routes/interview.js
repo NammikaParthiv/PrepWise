@@ -10,11 +10,12 @@ import {
 } from "../controllers/interview.js";
 import { ai } from "../config/gemini.js";
 import audioUpload from "../utils/audioUpload.js";
+import aiRateLimiter from "../middlewares/rateLimiter.js";
 
 const router = express.Router();
 
-router.post("/generate", protect, generateInterview);
-router.post("/submit", protect, submitInterview);
+router.post("/generate", protect,aiRateLimiter, generateInterview);
+router.post("/submit", protect,aiRateLimiter, submitInterview);
 router.get("/history", protect, interviewHistory);
 router.post("/transcribe", protect, audioUpload.single("audio"), transcribeAnswer);
 router.get("/:id", protect, getInterview);

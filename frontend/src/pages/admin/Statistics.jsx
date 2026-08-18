@@ -7,6 +7,7 @@ const AdminStatistics = () => {
     resumesAnalysed: 0,
     interviewsTaken: 0,
   });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -15,6 +16,8 @@ const AdminStatistics = () => {
         setStats(response.data.stats);
       } catch (error) {
         console.error("Error fetching stats:", error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchStats();
@@ -42,8 +45,13 @@ const AdminStatistics = () => {
           ].map((stat, idx) => (
             <div
               key={idx}
-              className={`group flex flex-col justify-center items-center p-8 sm:p-10 rounded-3xl border-2 border-gray-200 dark:border-gray-700 shadow-lg bg-linear-to-br ${stat.color} transition-all duration-500 hover:scale-105 hover:shadow-2xl`}
+              className={`group relative flex flex-col justify-center items-center p-8 sm:p-10 rounded-3xl border-2 border-gray-200 dark:border-gray-700 shadow-lg bg-linear-to-br ${stat.color} transition-all duration-500 hover:scale-105 hover:shadow-2xl overflow-hidden`}
             >
+              {loading && (
+                <div className="absolute inset-0 z-10 bg-white/20 dark:bg-slate-950/20 backdrop-blur-md flex items-center justify-center">
+                  <div className="h-8 w-8 rounded-full border-4 border-white/70 border-t-transparent animate-spin"></div>
+                </div>
+              )}
               <div className="text-5xl sm:text-6xl mb-4 select-none drop-shadow-md">
                 {stat.icon}
               </div>
@@ -51,7 +59,7 @@ const AdminStatistics = () => {
                 {stat.label}
               </h3>
               <span className="mt-3 text-3xl sm:text-4xl font-black text-white tracking-tight group-hover:text-yellow-200 transition-colors duration-300">
-                {stat.value.toLocaleString()}
+                {loading ? "0" : stat.value.toLocaleString()}
               </span>
             </div>
           ))}

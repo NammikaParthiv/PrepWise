@@ -19,6 +19,7 @@ function MockInterview() {
 
   const videoRef = useRef(null);
   const [stream, setStream] = useState(null);
+  const streamRef = useRef(null);
   const audioStreamRef = useRef(null); // audio-only tracks, for MediaRecorder
 
   const mediaRecorderRef = useRef(null);
@@ -29,6 +30,51 @@ function MockInterview() {
 
   const interview = location.state?.interview;
  const questions = useMemo(() => interview?.questions || [], [interview]);
+  const interviewSessionKey = interview?._id
+    ? `endedInterview:${interview._id}`
+    : null;
+
+  useEffect(() => {
+    streamRef.current = stream;
+  }, [stream]);
+
+  useEffect(() => {
+    if (!interview?._id) return;
+
+    if (sessionStorage.getItem(`endedInterview:${interview._id}`)) {
+      alert("This interview session has already ended.");
+      navigate("/u/interview_simulator", { replace: true });
+      return;
+    }
+
+    window.history.pushState({ interviewSession: interview._id }, "", window.location.href);
+
+    const handleBrowserBack = () => {
+      const shouldEnd = window.confirm(
+        "Are you sure you want to end this test? You cannot continue it again."
+      );
+
+      if (shouldEnd) {
+        sessionStorage.setItem(`endedInterview:${interview._id}`, "true");
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+          try {
+            mediaRecorderRef.current.stop();
+          } catch (err) {
+            console.log(err);
+          }
+        }
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach((track) => track.stop());
+        }
+        navigate("/u/interview_simulator", { replace: true });
+      } else {
+        window.history.pushState({ interviewSession: interview._id }, "", window.location.href);
+      }
+    };
+
+    window.addEventListener("popstate", handleBrowserBack);
+    return () => window.removeEventListener("popstate", handleBrowserBack);
+  }, [interview?._id, navigate]);
 
   // 1. Webcam +microphone.
   useEffect(() => {
@@ -163,6 +209,10 @@ function MockInterview() {
         answers: finalAnswers.map((a) => ({ answer: a?.answer || "[No clear speech detected]" })),
       });
 
+      if (interviewSessionKey) {
+        sessionStorage.setItem(interviewSessionKey, "true");
+      }
+
       navigate("/u/interview_simulator/result", {
         replace: true,
         state: { interview: res.data.interview },
@@ -172,7 +222,7 @@ function MockInterview() {
       alert(error.response?.data?.msg || "Failed to submit interview");
       setIsAnalyzing(false);
     }
-  }, [stream, interview, questions, navigate]);
+  }, [stream, interview, interviewSessionKey, questions, navigate]);
 
    const finishInterviewRef = useRef(finishInterview);
   useEffect(() => {
@@ -210,23 +260,30 @@ function MockInterview() {
     startRecordingRef.current = startRecording;
   }, [startRecording]);
 
-   useEffect(() => {
-    if (timeLeft > 0) {
-      const timer = setTimeout(() => setTimeLeft((prev) => prev - 1), 1000);
-      return () => clearTimeout(timer);
-    }
+  useEffect(() => {
+    const timer = setTimeout(
+      () => {
+        if (timeLeft > 0) {
+          setTimeLeft((prev) => prev - 1);
+          return;
+        }
 
-    if (phase === "reading") {
-      setPhase("answering");
-      setTimeLeft(120);
-      startRecordingRef.current();
-    } else if (phase === "answering") {
-      nextQuestionRef.current();
-    }
+        if (phase === "reading") {
+          setPhase("answering");
+          setTimeLeft(120);
+          startRecordingRef.current();
+        } else if (phase === "answering") {
+          nextQuestionRef.current();
+        }
+      },
+      timeLeft > 0 ? 1000 : 0
+    );
+
+    return () => clearTimeout(timer);
   }, [timeLeft, phase]);
 
   if (!interview) {
-    navigate("/u/interview_simulator");
+    navigate("/u/interview_simulator", { replace: true });
     return null;
   }
 
@@ -240,7 +297,10 @@ function MockInterview() {
         }
       }
       if (stream) stream.getTracks().forEach((track) => track.stop());
-      navigate("/u/interview_simulator");
+      if (interviewSessionKey) {
+        sessionStorage.setItem(interviewSessionKey, "true");
+      }
+      navigate("/u/interview_simulator", { replace: true });
     }
   };
 

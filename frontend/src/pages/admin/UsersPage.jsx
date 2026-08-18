@@ -60,7 +60,7 @@ const UsersPage = () => {
   };
 
   return (
-    <div className="min-h-screen transition-colors duration-500 bg-linear-to-br from-blue-100 via-sky-50 to-indigo-100 text-slate-900 dark:bg-slate-900 dark:text-white overflow-x-hidden">
+    <div className="min-h-screen transition-colors duration-500 bg-linear-to-br from-blue-100 via-sky-50 to-indigo-100 dark:from-slate-900 dark:via-indigo-950 dark:to-slate-900 text-slate-900 dark:bg-slate-900 dark:text-white overflow-x-hidden">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 sm:mb-12 gap-6">
           <div>

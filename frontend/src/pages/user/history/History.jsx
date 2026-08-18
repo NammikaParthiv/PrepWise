@@ -168,6 +168,7 @@ function History() {
                     id={item._id}
                     score={item.score}
                     role={item.job_role}
+                    resumeName={item.resume_name}
                     date={item.createdAt}
                   />
                 ))
@@ -226,7 +227,7 @@ function History() {
 
 export default History;
 
-export function ResumeCard({ id, score, role, date }) {
+export function ResumeCard({ id, score, role, resumeName, date }) {
   const navigate = useNavigate();
   const { dateStr, timeStr } = parseDateTime(date);
 
@@ -242,6 +243,9 @@ export function ResumeCard({ id, score, role, date }) {
           <span className="text-xs sm:text-sm font-bold text-orange-700 dark:text-orange-200">⏰ {timeStr}</span>
         </div>
         <div className="space-y-3">
+          <p className="text-xs sm:text-sm font-bold text-orange-700 dark:text-orange-100 truncate">
+            {resumeName || "Uploaded Resume"}
+          </p>
           <h2 className="text-base sm:text-lg font-extrabold text-orange-900 dark:text-white leading-snug">
             {role}
           </h2>

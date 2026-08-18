@@ -7,6 +7,9 @@ function WMockInterview() {
   const navigate = useNavigate();
 
   const interviewData = location.state?.interview;
+  const interviewSessionKey = interviewData?._id
+    ? `endedInterview:${interviewData._id}`
+    : null;
 
   const [darkMode, setDarkMode] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -18,8 +21,36 @@ function WMockInterview() {
     if (!interviewData || !interviewData.questions) {
       alert("No active interview session found. Redirecting to simulator.");
       navigate("/u/interview_simulator", { replace: true });
+      return;
+    }
+
+    if (sessionStorage.getItem(`endedInterview:${interviewData._id}`)) {
+      alert("This interview session has already ended.");
+      navigate("/u/interview_simulator", { replace: true });
     }
   }, [interviewData, navigate]);
+
+  useEffect(() => {
+    if (!interviewData?._id) return;
+
+    window.history.pushState({ interviewSession: interviewData._id }, "", window.location.href);
+
+    const handleBrowserBack = () => {
+      const shouldEnd = window.confirm(
+        "Are you sure you want to end this test? You cannot continue it again."
+      );
+
+      if (shouldEnd) {
+        sessionStorage.setItem(`endedInterview:${interviewData._id}`, "true");
+        navigate("/u/interview_simulator", { replace: true });
+      } else {
+        window.history.pushState({ interviewSession: interviewData._id }, "", window.location.href);
+      }
+    };
+
+    window.addEventListener("popstate", handleBrowserBack);
+    return () => window.removeEventListener("popstate", handleBrowserBack);
+  }, [interviewData?._id, navigate]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -72,6 +103,10 @@ function WMockInterview() {
         interviewId: interviewData._id,
         answers: formattedAnswers,
       });
+
+      if (interviewSessionKey) {
+        sessionStorage.setItem(interviewSessionKey, "true");
+      }
 
       navigate("/u/interview_simulator/result", {
         replace: true,

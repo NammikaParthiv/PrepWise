@@ -7,7 +7,7 @@ import { FaArrowLeft } from "react-icons/fa";
 function NavBar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
   const { darkMode, setDarkMode } = useTheme();
   const [open, setOpen] = useState(false);
 
@@ -39,7 +39,7 @@ function NavBar() {
         </button>
       </div>
 
-      <div className="absolute left-1/2 -translate-x-1/2 flex items-center cursor-pointer" onClick={() => navigate(user.role==="user"?"/u":"/admin")}>
+      <div className="absolute left-1/2 -translate-x-1/2 flex items-center cursor-pointer" onClick={() => navigate(user.role==="user"?"/u":"/admin", { replace: true })}>
         <h1 className="text-2xl md:text-5xl font-handwritting">prepWise</h1>
         <img src="/logo.png" alt="Logo" className="hidden md:block p-2 rounded-full h-15" />
       </div>
@@ -58,7 +58,7 @@ function NavBar() {
 
         {open && (
           <div className="absolute top-16 right-4 w-40 bg-white text-black rounded-lg shadow-xl overflow-hidden animate-in fade-in zoom-in duration-200">
-            <button className="block w-full text-left px-4 py-3 hover:bg-gray-100" onClick={() => {setOpen(false); navigate("/u/profile")}}>
+            <button className="block w-full text-left px-4 py-3 hover:bg-gray-100" onClick={() => {setOpen(false); navigate("/u/profile", { replace: path === "/u/profile" })}}>
               Profile 👤
             </button>
             <button 
@@ -66,7 +66,9 @@ function NavBar() {
               onClick={() => {
                 if(window.confirm("Are you sure you want to logout?")) {
                   localStorage.removeItem("token");
-                  window.location.href = "/login";
+                  localStorage.removeItem("user");
+                  setUser(null);
+                  window.location.replace("/login");
                 }
               }}
             >

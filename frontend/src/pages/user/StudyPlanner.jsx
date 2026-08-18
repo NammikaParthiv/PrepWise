@@ -80,13 +80,15 @@ function StudyPlanner() {
     const confirmDelete = window.confirm("Are you sure you want to delete this goal?");
     if (!confirmDelete) return;
 
+    const goal = goals[index];
+    const previousGoals = goals;
+    setGoals((prevGoals) => prevGoals.filter((item) => item._id !== goal._id));
+
     try {
-      const goal = goals[index];
       await axios.delete(`/api/goals/${goal._id}`);
-      // FIX: update frontend immediately
-      setGoals((prevGoals) => prevGoals.filter((_, i) => i !== index));
     } catch (error) {
       console.log(error);
+      setGoals(previousGoals);
     }
   };
 

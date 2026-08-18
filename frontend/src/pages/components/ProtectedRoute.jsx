@@ -1,9 +1,11 @@
 import { Outlet, Navigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthProvider";
 
 function ProtectedRoute({ role }) {
-  const user = JSON.parse(localStorage.getItem("user"));
+  const { user } = useAuth();
+  const token = localStorage.getItem("token");
 
-  if (!user) {
+  if (!token || !user) {
     return <Navigate to="/login" replace />;
   }
   if (user.role !== role) {

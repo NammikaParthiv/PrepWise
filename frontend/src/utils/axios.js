@@ -19,4 +19,18 @@ instance.interceptors.request.use(
         return Promise.reject(error);
     }
 )
+
+instance.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response?.status === 401) {
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            if (!["/login", "/register", "/"].includes(window.location.pathname)) {
+                window.location.replace("/login");
+            }
+        }
+        return Promise.reject(error);
+    }
+)
 export default instance;

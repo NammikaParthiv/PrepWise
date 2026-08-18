@@ -20,14 +20,33 @@ export const AuthProvider = ({ children }) => {
       try {
         const res = await axios.get("/api/user/profile");
         setUser(res.data);
+        localStorage.setItem("user", JSON.stringify(res.data));
       } catch (error) {
         console.log(error);
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
         setUser(null);
       } finally {
         setLoading(false);
       }
     };
     checkAuth();
+  }, []);
+
+  useEffect(() => {
+    const syncAuthFromStorage = () => {
+      if (!localStorage.getItem("token")) {
+        localStorage.removeItem("user");
+        setUser(null);
+      }
+    };
+
+    window.addEventListener("pageshow", syncAuthFromStorage);
+    window.addEventListener("storage", syncAuthFromStorage);
+    return () => {
+      window.removeEventListener("pageshow", syncAuthFromStorage);
+      window.removeEventListener("storage", syncAuthFromStorage);
+    };
   }, []);
 
   return (
