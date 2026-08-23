@@ -1,6 +1,7 @@
 import axios from "../../utils/axios.js";
 import { useState } from "react";
 import { FaCloudUploadAlt, FaFilePdf, FaCheckCircle, FaExclamationTriangle, FaLightbulb, FaSpinner } from "react-icons/fa";
+import { showErrorAlert } from "../../utils/errorMessage.js";
 
 function ResumeAnalyser() {
   const [resume, setResume] = useState(null);
@@ -28,6 +29,7 @@ function ResumeAnalyser() {
       setAnalysisResult(res.data.data);
     } catch (error) {
       console.log("Resume Upload Failed", error);
+      showErrorAlert(error, "Resume analysis failed. Please try again.");
     } finally {
       setLoading(false);
     }

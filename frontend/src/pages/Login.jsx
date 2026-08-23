@@ -3,12 +3,14 @@ import axios from "../utils/axios.js";
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthProvider.jsx";
+import { getErrorMessage } from "../utils/errorMessage.js";
 
 function Login() {
   const { user, setUser } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
 
   useEffect(() => {
     if (user) {
@@ -22,6 +24,7 @@ function Login() {
 
   const submitHandle = async (e) => {
     e.preventDefault();
+    setPasswordError("");
     try {
       const res = await axios.post("/api/user/login", {
         email,
@@ -39,7 +42,17 @@ function Login() {
         navigate("/u", { replace: true });
       }
     } catch (error) {
-      alert(error.response?.data?.msg || "Login Failed");
+      if (error.response?.data?.field === "password") {
+        setPasswordError(error.response.data.msg || "Wrong password. Please try again.");
+        return;
+      }
+
+      if (error.response?.status === 404) {
+        alert(error.response?.data?.msg || "No account exists with this email address.");
+        return;
+      }
+
+      alert(getErrorMessage(error, "Login failed. Please try again."));
     }
   };
 
@@ -60,15 +73,31 @@ function Login() {
             <input
               type="email"
               placeholder="Email"
+              value={email}
               className="border w-90 max-w-full border-gray-700 text-gray-900 rounded py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
               onChange={(e) => setEmail(e.target.value)}
             />
-            <input
-              type="password"
-              placeholder="Password"
-              onChange={(e) => setPassword(e.target.value)}
-              className="border w-90 max-w-full border-gray-700 text-gray-900 rounded py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            <div className="w-90 max-w-full">
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setPasswordError("");
+                }}
+                className={`border w-full text-gray-900 rounded py-2 px-4 focus:outline-none focus:ring-2 ${
+                  passwordError
+                    ? "border-red-600 focus:ring-red-500"
+                    : "border-gray-700 focus:ring-blue-500"
+                }`}
+              />
+              {passwordError && (
+                <p className="text-left text-red-700 text-sm font-semibold mt-1">
+                  {passwordError}
+                </p>
+              )}
+            </div>
 
             {/* Forgot Password Link */}
             <div className="w-90 max-w-full text-right -mt-2">

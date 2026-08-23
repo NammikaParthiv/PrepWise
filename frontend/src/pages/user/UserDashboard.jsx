@@ -9,7 +9,7 @@ function HomePage() {
   return (
     <div className="min-h-screen transition-all duration-500 bg-linear-to-r from-indigo-300 via-sky-100 to-blue-300 dark:from-slate-900 dark:via-indigo-950 dark:to-slate-900 overflow-x-hidden">
       <div className="px-4 sm:px-8 lg:px-16 pt-8 sm:pt-12 max-w-7xl mx-auto">
-        
+
         <div className="pt-12 pb-10 sm:pt-28 sm:pb-18 px-6 sm:px-10 text-center border-2 sm:border-4 rounded-3xl sm:rounded-4xl my-6 sm:my-10 shadow-2xl border-slate-900 dark:border-green-500 bg-linear-to-br from-indigo-600 via-violet-600 to-purple-700 dark:bg-indigo-800">
           <h1 className="text-5xl sm:text-7xl lg:text-8xl font-extrabold text-white tracking-tight">
             Prep<span className="text-amber-300 dark:text-blue-400">Wise</span>
@@ -25,52 +25,66 @@ function HomePage() {
           </p>
         </div>
 
-        {/* Explore Features Section */}
         <div className="px-2 sm:px-6 pb-16 sm:pb-20">
           <h2 className="text-3xl sm:text-5xl font-bold text-center mb-10 sm:mb-16 text-slate-900 dark:text-white">
             Explore Features
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-y-16 gap-x-60 justify-items-center justify-center max-w-6xl mx-auto">
-            <FeatureCard
-              color="from-rose-400 to-rose-600"
-              heading="📑 Resume Analyzer"
-              description="AI-powered feedback to improve resume quality and ATS compatibility."
-              image={resumeImg}
-              link="/u/resume_analyser"
-            />
-            <FeatureCard
-              color="from-indigo-400 to-blue-600"
-              heading="🗣️ Mock Interview"
-              description="Practice realistic interviews with AI evaluation and scoring."
-              image={interviewImg}
-              link="/u/interview_simulator"
-            />
-            <FeatureCard
-              color="from-orange-400 to-amber-600"
-              heading="🎯 Study Planner"
-              description="Organize preparation goals and stay consistent every day."
-              image={studyPlannerImg}
-              link="/u/study_planner"
-            />
-            <FeatureCard
-              color="from-emerald-400 to-green-600"
-              heading="📝 Notes"
-              description="Store important concepts, revision notes and resources."
-              image={notesImg}
-              link="/u/references"
-            />
-            <FeatureCard
-              color="from-yellow-400 to-yellow-600"
-              heading="🕒 History"
-              description="Track previous analyses and interview performance."
-              image={historyImg}
-              link="/u/history"
-            />
+          {/* Increased horizontal and vertical gaps */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 justify-items-center gap-y-16 gap-x-16 lg:gap-x-70 max-w-408 mx-auto">
+            <div className="min-w-0">
+              <FeatureCard
+                color="from-rose-400 to-rose-600"
+                heading="📑 Resume Analyzer"
+                description="AI-powered feedback to improve resume quality and ATS compatibility."
+                image={resumeImg}
+                link="/u/resume_analyser"
+              />
+            </div>
+
+            <div className="min-w-0">
+              <FeatureCard
+                color="from-indigo-400 to-blue-600"
+                heading="🗣️ Mock Interview"
+                description="Practice realistic interviews with AI evaluation and scoring."
+                image={interviewImg}
+                link="/u/interview_simulator"
+              />
+            </div>
+
+            <div className="min-w-0">
+              <FeatureCard
+                color="from-orange-400 to-amber-600"
+                heading="🎯 Study Planner"
+                description="Organize preparation goals and stay consistent every day."
+                image={studyPlannerImg}
+                link="/u/study_planner"
+              />
+            </div>
+
+            {/* Last 2 cards centered nicely underneath with the larger gap layout */}
+            <div className="min-w-0 lg:col-start-1 lg:translate-x-[60%]">
+              <FeatureCard
+                color="from-emerald-400 to-green-600"
+                heading="📝 Notes"
+                description="Store important concepts, revision notes and resources."
+                image={notesImg}
+                link="/u/references"
+              />
+            </div>
+
+            <div className="min-w-0 lg:col-start-2 lg:translate-x-[60%]">
+              <FeatureCard
+                color="from-yellow-400 to-yellow-600"
+                heading="🕒 History"
+                description="Track previous analyses and interview performance."
+                image={historyImg}
+                link="/u/history"
+              />
+            </div>
           </div>
         </div>
 
-        {/* Footer Catchphrase Section */}
         <div className="text-center py-12 sm:py-20">
           <h2 className="text-3xl sm:text-5xl font-bold text-slate-900 dark:text-white">
             Your Journey Starts Here

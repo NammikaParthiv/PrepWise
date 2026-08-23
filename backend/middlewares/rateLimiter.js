@@ -47,7 +47,8 @@ const aiRateLimiter = async (req, res, next) => {
       );
 
       return res.status(429).json({
-        msg: "You have reached your daily AI request limit. Please try again tomorrow.",
+        msg: "Today's AI limit has been reached. Please check again tomorrow.",
+        code: "DAILY_AI_LIMIT_REACHED",
         retryAfterSeconds: Math.max(ttl, 0),
       });
     }
@@ -58,7 +59,8 @@ const aiRateLimiter = async (req, res, next) => {
     console.error("AI rate limiter error:", error);
 
     return res.status(503).json({
-      msg: "Rate limiting service is temporarily unavailable.",
+      msg: "AI usage limit service is temporarily unavailable. Please try again after some time.",
+      code: "RATE_LIMITER_UNAVAILABLE",
     });
   }
 };

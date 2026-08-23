@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "../../../utils/axios.js";
+import { showErrorAlert } from "../../../utils/errorMessage.js";
 
 function MockInterview() {
   const navigate = useNavigate();
@@ -149,6 +150,7 @@ function MockInterview() {
           });
         } catch (err) {
           console.error(`Transcription failed for question ${index + 1}:`, err);
+          showErrorAlert(err, "Voice transcription failed for this answer.");
           allAnswersRef.current[index] = { question: questions[index]?.question || "", answer: "[Transcription failed]" };
           setTranscriptionStatuses((prev) => {
             const copy = [...prev];
@@ -219,7 +221,7 @@ function MockInterview() {
       });
     } catch (error) {
       console.log(error);
-      alert(error.response?.data?.msg || "Failed to submit interview");
+      showErrorAlert(error, "Failed to submit interview. Please try again.");
       setIsAnalyzing(false);
     }
   }, [stream, interview, interviewSessionKey, questions, navigate]);

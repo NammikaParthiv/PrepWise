@@ -3,6 +3,7 @@ import Interview from "../models/interview.js";
 import redisClient from "../config/redis.js";
 import bullmqConnection from "../config/bullmq.js";
 import { ai } from "../config/gemini.js";
+import { getAiErrorResponse } from "../utils/aiErrorResponse.js";
 
 const interviewWorker = new Worker(
   "interviewGenerationQ",
@@ -10,8 +11,8 @@ const interviewWorker = new Worker(
   async (job) => {  
     const { job_role } = job.data;
     const normalizedRole = job_role.trim().toLowerCase();
-    console.log(`Generating questions for ${job_role}`);
-    console.log(job.data);
+    // console.log(`Generating questions for ${job_role}`);
+    // console.log(job.data);
     try {
       const prompt = `
       Generate exactly 3 realistic technical interview questions for a B.Tech graduating student applying for the job role: ${job_role}.
@@ -41,7 +42,7 @@ const interviewWorker = new Worker(
       Job Role: ${job_role}
       `;
       const result = await ai.models.generateContent({
-        model: "gemini-3.5-flash-lite",
+        model: "gemini-3.1-flash-lite",
         contents: prompt,
       });
 
@@ -68,10 +69,12 @@ const interviewWorker = new Worker(
                 question:q,
             })),
             status:"completed",
+            aiErrorMessage:"",
         },
       });
       
     } catch (error) {
+        const aiError = getAiErrorResponse(error);
 
         await Interview.updateMany(
             {
@@ -80,6 +83,7 @@ const interviewWorker = new Worker(
             },{
                 $set:{
                     status:"failed",
+                    aiErrorMessage: aiError.body.msg,
                 },
             }
         );

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../../../utils/axios.js";
+import { showErrorAlert } from "../../../utils/errorMessage.js";
 
 function InterviewSimulator() {
   const navigate = useNavigate();
@@ -44,29 +45,38 @@ function InterviewSimulator() {
       } else {
         const interviewId = res.data.interviewId;
         const interval = setInterval(async () => {
-          const response = await axios.get(`/api/interview/${interviewId}`);
+          try {
+            const response = await axios.get(`/api/interview/${interviewId}`);
 
-          if (response.data.interview.status === "completed") {
+            if (response.data.interview.status === "completed") {
+              clearInterval(interval);
+              setLoading(false);
+              navigate(sessionRoute, {
+                state: {
+                  interview: response.data.interview,
+                  interviewType: interviewType,
+                },
+                replace: true,
+              });
+            }
+            if (response.data.interview.status === "failed") {
+              clearInterval(interval);
+              alert(
+                response.data.interview.aiErrorMessage ||
+                  "AI could not generate interview questions right now. The AI limit may be reached, the API key may have a problem, or the server may be unavailable. Please try again later."
+              );
+              setLoading(false);
+            }
+          } catch (error) {
             clearInterval(interval);
             setLoading(false);
-            navigate(sessionRoute, {
-              state: {
-                interview: response.data.interview,
-                interviewType: interviewType,
-              },
-              replace: true,
-            });
-          }
-          if (response.data.interview.status === "failed") {
-            clearInterval(interval);
-            alert("Interview generation failed!");
-            setLoading(false);
+            showErrorAlert(error, "Interview generation failed. Please try again.");
           }
         }, 2000); // 2 sec
       }
     } catch (error) {
       console.log(error);
-      alert(error.response?.data?.msg || error.message);
+      showErrorAlert(error, "Interview generation failed. Please try again.");
       setLoading(false);
     }
   };

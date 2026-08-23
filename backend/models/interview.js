@@ -46,6 +46,10 @@ const interviewSchema = new mongoose.Schema(
       enum: ["waiting", "processing", "completed", "failed"], 
       default: "waiting" 
     },
+    aiErrorMessage: {
+      type: String,
+      default: "",
+    },
   },
   { timestamps: true },
 );

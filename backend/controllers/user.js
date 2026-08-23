@@ -7,15 +7,72 @@ import Interview from "../models/interview.js";
 import Resume from "../models/resume.js";
 import nodemailer from "nodemailer";
 
-const transporter = nodemailer.createTransport({
-  host: "smtp.ethereal.email",
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+let cachedTransporter = null;
+let cachedMailUser = process.env.EMAIL_USER;
+
+const createEtherealTransporter = async () => {
+  const testAccount = await nodemailer.createTestAccount();
+  cachedMailUser = testAccount.user;
+  cachedTransporter = nodemailer.createTransport({
+    host: "smtp.ethereal.email",
+    port: 587,
+    secure: false,
+    auth: {
+      user: testAccount.user,
+      pass: testAccount.pass,
+    },
+  });
+
+  return { transporter: cachedTransporter, mailUser: cachedMailUser };
+};
+
+const getPasswordResetTransporter = async ({ forceTestAccount = false } = {}) => {
+  if (cachedTransporter && !forceTestAccount) {
+    return { transporter: cachedTransporter, mailUser: cachedMailUser };
+  }
+
+  if (process.env.EMAIL_USER && process.env.EMAIL_PASS && !forceTestAccount) {
+    cachedTransporter = nodemailer.createTransport({
+      host: "smtp.ethereal.email",
+      port: 587,
+      secure: false,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+    return { transporter: cachedTransporter, mailUser: cachedMailUser };
+  }
+
+  return createEtherealTransporter();
+};
+
+const sendPasswordResetMail = async (mailOptions) => {
+  let { transporter, mailUser } = await getPasswordResetTransporter();
+
+  try {
+    return await transporter.sendMail({
+      ...mailOptions,
+      from: `"PrepWise" <${mailUser}>`,
+    });
+  } catch (error) {
+    const isAuthError = error?.code === "EAUTH" || error?.responseCode === 535;
+
+    if (!isAuthError) {
+      throw error;
+    }
+
+    console.warn("Configured Ethereal credentials failed. Retrying with a fresh Ethereal test account.");
+    cachedTransporter = null;
+    cachedMailUser = null;
+    ({ transporter, mailUser } = await getPasswordResetTransporter({ forceTestAccount: true }));
+
+    return transporter.sendMail({
+      ...mailOptions,
+      from: `"PrepWise" <${mailUser}>`,
+    });
+  }
+};
 
 export const loginUser = async (req, res) => {
   const { email, password } = req.body;
@@ -25,11 +82,11 @@ export const loginUser = async (req, res) => {
   try {
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ msg: "No User Found" });
+      return res.status(404).json({ msg: "No account exists with this email address." });
     }
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ msg: "Invalid Credentials" });
+      return res.status(400).json({ msg: "Wrong password. Please try again.", field: "password" });
     }
     const token = jwt.sign(
       { id: user._id },
@@ -44,6 +101,10 @@ export const loginUser = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        profilePic_URL: user.profilePic_URL,
+        college: user.college,
+        phone: user.phone,
+        gender: user.gender,
       },
     });
   } catch (err) {
@@ -210,7 +271,6 @@ export const forgotPassword = async (req, res) => {
     await user.save();
 
     const mailOptions = {
-      from: `"PrepWise" <${process.env.EMAIL_USER}>`,
       to: user.email,
       subject: "Password Reset OTP - PrepWise",
       html: `
@@ -221,11 +281,11 @@ export const forgotPassword = async (req, res) => {
       `,
     };
 
-    const info = await transporter.sendMail(mailOptions);
+    const info = await sendPasswordResetMail(mailOptions);
     const previewURL = nodemailer.getTestMessageUrl(info);
 
     return res.status(200).json({ 
-      msg: "OTP sent to the link successfully.",
+      msg: "OTP sent successfully. Open the Ethereal preview link to view the code.",
       previewUrl: previewURL
     });
   } catch (error) {

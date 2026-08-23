@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "../../../utils/axios.js";
+import { showErrorAlert } from "../../../utils/errorMessage.js";
 
 function WMockInterview() {
   const location = useLocation();
@@ -114,11 +115,7 @@ function WMockInterview() {
       });
     } catch (error) {
       console.error(error);
-      if (error.response?.status === 503) {
-        alert("The server is busy. Please try later.");
-      } else {
-        alert(error.response?.data?.msg || "Failed to submit interview.");
-      }
+      showErrorAlert(error, "Failed to submit interview. Please try again.");
       setSubmitting(false);
     }
   };

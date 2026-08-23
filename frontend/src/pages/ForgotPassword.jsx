@@ -2,6 +2,7 @@ import loginBG from "../assets/login.png";
 import axios from "../utils/axios.js";
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { showErrorAlert } from "../utils/errorMessage.js";
 
 function ForgotPassword() {
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ function ForgotPassword() {
 
       // Check if Ethereal link is there in backend
       if (res.data.previewUrl) {
+        alert("OTP generated successfully. Open the Ethereal preview link on the next page to view your code.");
         // Pass previewUrl to the reset password page
         navigate("/reset-password", {
           state: {
@@ -28,7 +30,7 @@ function ForgotPassword() {
         navigate("/reset-password", { state: { email } });
       }
     } catch (error) {
-      alert(error.response?.data?.msg || "Something went wrong.");
+      showErrorAlert(error, "Could not send OTP. Please try again.");
     } finally {
       setLoading(false);
     }

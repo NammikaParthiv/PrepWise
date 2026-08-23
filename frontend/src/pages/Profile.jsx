@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import axios from "../utils/axios.js";
+import { useAuth } from "../context/AuthProvider.jsx";
+import { showErrorAlert } from "../utils/errorMessage.js";
 
 function Profile() {
-  const [user, setUser] = useState(null);
+  const { user, setUser } = useAuth();
+  const [profileUser, setProfileUser] = useState(user);
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState("");
   const [college, setCollege] = useState("");
@@ -11,27 +14,37 @@ function Profile() {
 
   const [photoFile, setPhotoFile] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
+  const [photoVersion, setPhotoVersion] = useState(0);
+  const currentUser = profileUser || user;
+
+  const getProfilePhotoUrl = (profilePicUrl) => {
+    return profilePicUrl
+      ? `http://localhost:2222${profilePicUrl}?v=${photoVersion}`
+      : "/user.png";
+  };
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const res = await axios.get("/api/user/profile");
+        setProfileUser(res.data);
         setUser(res.data);
+        localStorage.setItem("user", JSON.stringify(res.data));
       } catch (err) {
         console.log("Error fetching profile:", err);
       }
     };
     fetchProfile();
-  }, []);
+  }, [setUser]);
 
   const handleStartEditing = () => {
-    setName(user?.name || "");
-    setCollege(user?.college || "");
-    setPhone(user?.phone || "+91 ");
-    setGender(user?.gender || "Prefer not to say");
+    setName(currentUser?.name || "");
+    setCollege(currentUser?.college || "");
+    setPhone(currentUser?.phone || "+91 ");
+    setGender(currentUser?.gender || "Prefer not to say");
     setPhotoPreview(
-      user?.profilePic_URL
-        ? `http://localhost:2222${user.profilePic_URL}`
+      currentUser?.profilePic_URL
+        ? getProfilePhotoUrl(currentUser.profilePic_URL)
         : "/user.png"
     );
     setPhotoFile(null);
@@ -58,20 +71,31 @@ function Profile() {
         formData.append("gender", gender);
         formData.append("profilePic", photoFile);
 
-        res = await axios.put("/api/user/profile", formData);
+        res = await axios.put("/api/user/profile", formData, {
+          headers: { "Content-Type": undefined },
+        });
       } else {
         res = await axios.put("/api/user/profile", payload);
       }
 
       const updatedUser = res.data.user || res.data;
+      const nextUser = {
+        ...currentUser,
+        ...updatedUser,
+      };
+      setProfileUser(nextUser);
       setUser((prev) => ({
         ...prev,
         ...updatedUser,
       }));
+      localStorage.setItem("user", JSON.stringify(nextUser));
+      setPhotoVersion(Date.now());
       setIsEditing(false);
       setPhotoFile(null);
+      setPhotoPreview(null);
     } catch (err) {
       console.log("Error saving changes:", err);
+      showErrorAlert(err, "Could not update profile. Please try again.");
     }
   };
 
@@ -84,14 +108,22 @@ function Profile() {
     try {
       const res = await axios.delete("/api/user/profile/photo");
       const updatedUser = res.data.user || res.data;
+      const nextUser = {
+        ...currentUser,
+        ...updatedUser,
+      };
+      setProfileUser(nextUser);
       setUser((prev) => ({
         ...prev,
         ...updatedUser,
       }));
+      localStorage.setItem("user", JSON.stringify(nextUser));
+      setPhotoVersion(Date.now());
       setPhotoFile(null);
       setPhotoPreview("/user.png");
     } catch (err) {
       console.log("Error deleting photo:", err);
+      showErrorAlert(err, "Could not delete profile photo. Please try again.");
     }
   };
 
@@ -124,11 +156,11 @@ function Profile() {
                 src={
                   isEditing
                     ? photoPreview ||
-                      (user?.profilePic_URL
-                        ? `http://localhost:2222${user.profilePic_URL}`
+                      (currentUser?.profilePic_URL
+                        ? getProfilePhotoUrl(currentUser.profilePic_URL)
                         : "/user.png")
-                    : user?.profilePic_URL
-                    ? `http://localhost:2222${user.profilePic_URL}`
+                    : currentUser?.profilePic_URL
+                    ? getProfilePhotoUrl(currentUser.profilePic_URL)
                     : "/user.png"
                 }
                 alt="Profile"
@@ -175,7 +207,7 @@ function Profile() {
                     />
                   ) : (
                     <h2 className="text-xl sm:text-2xl font-bold mt-1 break-words">
-                      {user?.name || "User??"}
+                      {currentUser?.name || "User??"}
                     </h2>
                   )}
                 </div>
@@ -184,7 +216,7 @@ function Profile() {
                 <div className="bg-gray-50 dark:bg-slate-900/50 p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-slate-700/60">
                   <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm font-bold uppercase tracking-wider">Email</p>
                   <h2 className="text-lg sm:text-xl text-gray-500 dark:text-gray-400 cursor-not-allowed select-none mt-1 break-words font-medium">
-                    {user?.email || "xyz@gmail.com"}
+                    {currentUser?.email || "xyz@gmail.com"}
                   </h2>
                 </div>
 
@@ -199,7 +231,7 @@ function Profile() {
                       className="text-lg sm:text-xl border-b-2 border-violet-500 focus:outline-none w-full py-1 mt-2 bg-transparent text-black dark:text-white"
                     />
                   ) : (
-                    <h2 className="text-lg sm:text-xl font-medium mt-1 break-words">{user?.college || "Not specified"}</h2>
+                    <h2 className="text-lg sm:text-xl font-medium mt-1 break-words">{currentUser?.college || "Not specified"}</h2>
                   )}
                 </div>
 
@@ -220,8 +252,8 @@ function Profile() {
                         className="text-lg sm:text-xl border-b-2 border-violet-500 focus:outline-none w-full py-1 mt-2 bg-transparent text-black dark:text-white"
                       />
                     ) : (
-                      <h2 className={`text-lg sm:text-xl font-medium mt-1 ${!user?.phone || user?.phone === "+91 " ? "text-gray-400 dark:text-gray-500" : ""}`}>
-                        {user?.phone && user?.phone.trim() !== "+91" ? user.phone : "+91 "}
+                      <h2 className={`text-lg sm:text-xl font-medium mt-1 ${!currentUser?.phone || currentUser?.phone === "+91 " ? "text-gray-400 dark:text-gray-500" : ""}`}>
+                        {currentUser?.phone && currentUser?.phone.trim() !== "+91" ? currentUser.phone : "+91 "}
                       </h2>
                     )}
                   </div>
@@ -241,11 +273,11 @@ function Profile() {
                       </select>
                     ) : (
                       <h2 className="text-lg sm:text-xl font-medium mt-1">
-                        {user?.gender === "Male"
+                        {currentUser?.gender === "Male"
                           ? "♂️ Male"
-                          : user?.gender === "Female"
+                          : currentUser?.gender === "Female"
                           ? "♀️ Female"
-                          : (user?.gender || "Prefer not to say")}
+                          : (currentUser?.gender || "Prefer not to say")}
                       </h2>
                     )}
                   </div>
@@ -294,25 +326,25 @@ function Profile() {
             <AchievementCard
               icon="🎤"
               title="Mock Interviews"
-              value={user?.stats?.totalInterviews ?? "0"}
+              value={currentUser?.stats?.totalInterviews ?? "0"}
               color="from-violet-600 to-purple-700"
             />
             <AchievementCard
               icon="📄"
               title="Resume Analysis"
-              value={user?.stats?.totalResumes ?? "0"}
+              value={currentUser?.stats?.totalResumes ?? "0"}
               color="from-orange-500 to-orange-700"
             />
             <AchievementCard
               icon="⭐"
               title="Best Interview Score"
-              value={`${user?.stats?.bestInterviewScore ?? 0} / 100`}
+              value={`${currentUser?.stats?.bestInterviewScore ?? 0} / 100`}
               color="from-green-600 to-emerald-700"
             />
             <AchievementCard
               icon="🏅"
               title="Best Resume Score"
-              value={`${user?.stats?.bestResumeScore ?? 0}%`}
+              value={`${currentUser?.stats?.bestResumeScore ?? 0}%`}
               color="from-blue-600 to-cyan-700"
             />
           </div>

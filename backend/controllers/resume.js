@@ -7,6 +7,7 @@ const pdfParse = require("pdf-parse");
 
 import fs from "fs";
 import path from "path";
+import { getAiErrorResponse } from "../utils/aiErrorResponse.js";
 
 export const addResume = async (req, res) => {
   try {
@@ -125,16 +126,9 @@ export const addResume = async (req, res) => {
 
     res.status(200).json({ msg: "Your Analysis are Ready", data: newResume });
   } catch (error) {
-    if (error.status === 503) {
-      return res.status(200).json({
-        score: 0,
-        pros: "AI is not available currently",
-        cons: "AI is not avaliable currently",
-        needImprove: "AI is not avaliable currently",
-      });
-    }
     console.log(error);
-    return res.status(500).json({ msg: "Server Error", error });
+    const aiError = getAiErrorResponse(error);
+    return res.status(aiError.status).json(aiError.body);
   }
 };
 

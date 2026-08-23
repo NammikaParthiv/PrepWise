@@ -5,6 +5,7 @@ import redisClient from "../config/redis.js";
 import fs from "fs";
 import axios from "axios";
 import FormData from "form-data";
+import { getAiErrorResponse } from "../utils/aiErrorResponse.js";
 
 const WHISPER_API_URL = process.env.WHISPER_API_URL || "http://localhost:8000/v1/audio/transcriptions";
 const WHISPER_MODEL = process.env.WHISPER_MODEL || "Systran/faster-distil-whisper-small.en";
@@ -138,51 +139,63 @@ export const submitInterview = async (req, res) => {
        }));
 
         let prompt = `
-        You are a senior technical interviewer evaluating a candidate's mock interview.
-        Evaluate ONLY what the candidate actually said. Never assume or invent knowledge.
+        You are a senior Frontend, Backend and Full Stack technical interviewer evaluating a real-world interview.
+
+        Evaluate ONLY what the candidate actually demonstrated. Never assume knowledge they did not show.
 
         CORE RULE:
-        For every question, "merits" + "demerits" together must represent a COMPLETE, technically correct interview answer to that question, including definitions, concepts, reasoning, steps, implementation/application, examples, and complexity wherever relevant.
+        For every question, merits + demerits must together form a COMPLETE, technically correct, interview-ready answer to the original question.
 
-        Rules:
-        - merits = ONLY correct technical information actually demonstrated by the candidate.
-        - demerits = the remaining information needed to make the answer complete and technically correct.
-        - Demerits must contain the ACTUAL CORRECT CONTENT the candidate should know, not merely statements such as "should explain X" or "needs to mention Y".
-        - If a concept requires explaining HOW to apply or implement it, include the actual steps/logic in demerits.
-        - If the candidate fails to explain an application, algorithm, process, example, implementation, or reasoning, provide that complete missing explanation in demerits.
-        - Do NOT assume the candidate knows something just because they mentioned the concept.
-        - Never put an ideal-answer point in merits unless the candidate actually demonstrated it.
-        - Do not repeat the same information in merits and demerits.
-        - If the answer is partially correct, preserve the candidate's correct points in merits and provide the remaining complete answer in demerits.
-        - If the answer is completely correct and complete, demerits may be [].
-        - If there is NO ANSWER:
-          - score = 0
-          - merits = []
-          - demerits = the COMPLETE technically correct answer that the candidate should have given.
-        - For unanswered questions, do not merely say "No answer provided" or list topic names.
-        - Demerits must be useful for learning: a candidate should be able to read merits + demerits and understand how to answer the question correctly in an interview.
-        - Include relevant examples, steps, implementation logic, use cases, trade-offs, and time/space complexity when they are important to the question.
-        - Do not add irrelevant details that are not expected for the question.
-        - Do not use generic merits such as "Good answer".
-        - Minor English/grammar mistakes should not significantly affect technical scoring.
-        - strongAreas = topics the candidate demonstrated well.
-        - weakAreas = topics where the candidate's knowledge was incomplete, incorrect, or unclear.
-        - suggestions = specific improvements for weak areas and reliable learning resources. Never invent resources.
+        MERITS:
+        - Include ONLY technically correct information actually demonstrated by the candidate.
+        - Give meaningful credit for valid reasoning, practical approaches, and relevant technical knowledge even if the approach is incomplete or not the best production approach.
+        - Never put knowledge in merits that the candidate did not demonstrate.
+        - Do not treat a reasonable alternative approach as completely wrong merely because a better approach exists.
+
+        DEMERITS:
+        - Provide the ACTUAL CORRECT missing, incorrect, or improved technical content.
+        - Never write only "explain X", "mention Y", "use a better approach", or similar instructions.
+        - If the candidate's approach is valid but has limitations, preserve it in merits and explain the better/production approach, why it is better, and how it should actually be implemented.
+        - If the candidate is partially correct, keep the correct parts in merits and provide the remaining complete explanation in demerits.
+        - If the candidate is technically incorrect, explain the correct approach completely.
+        - If there is no meaningful answer, provide the complete correct answer in demerits.
+        - Do not repeat information already demonstrated in merits.
+
+        COMPLETE ANSWER:
+        Include the important information reasonably expected in a real Frontend/Backend/Full Stack interview, depending on the question:
+        - Definition and purpose when relevant.
+        - How it works.
+        - Real-world application.
+        - Implementation approach.
+        - Request/response or data flow when relevant.
+        - Important components and their responsibilities.
+        - Security considerations when relevant.
+        - Performance/scalability considerations when relevant.
+        - Error handling and edge cases when relevant.
+        - Advantages, limitations, and trade-offs when relevant.
+        - Practical examples when useful.
+        Do not add irrelevant information.
 
         SCORING:
-        - score: 0-10
-        - 0 = no answer, irrelevant answer, or no meaningful correct knowledge.
-        - 1-3 = very limited understanding.
-        - 4-6 = partial understanding with important missing concepts.
-        - 7-8 = good understanding with some missing details.
-        - 9 = very strong and nearly complete.
-        - 10 = correct, complete, relevant, and clearly explained.
-        - Score based on correctness, completeness, and importance of the demonstrated knowledge, NOT by counting merits/demerits.
-        - overallScore: 0-100 based on performance across all questions.
+        0 = no answer, completely irrelevant answer, or technically invalid answer with no meaningful correct knowledge.
+        1-3 = very limited understanding or mostly incorrect explanation.
+        4-6 = meaningful partial understanding or a valid approach with important missing details/limitations.
+        7-8 = strong practical understanding with some missing details.
+        9 = very strong and nearly complete understanding.
+        10 = technically correct, complete, relevant, well-reasoned, and clearly explained.
 
-        OUTPUT:
+        A reasonable and technically valid approach must receive meaningful credit even if it is not the best production approach.
+        Do not give a very low score merely because the candidate missed an optimization, best practice, alternative technology, or advanced detail.
+        However, incorrect, unsafe, impractical, or fundamentally misunderstood approaches should be penalized appropriately.
+        Score based on correctness, practical understanding, reasoning, completeness, and importance of missing knowledge, NOT by counting merits/demerits.
+        Minor English or grammar mistakes should not significantly affect technical scoring.
 
-        Return ONLY valid JSON:
+        AREAS:
+        - strongAreas = topics the candidate demonstrated well.
+        - weakAreas = topics where the candidate was incorrect, incomplete, unclear, or lacked important practical knowledge.
+        - suggestions = specific actionable improvements for weak areas. Never invent resources.
+
+        OUTPUT ONLY VALID JSON:
 
         {
           "overallScore": 85,
@@ -191,29 +204,25 @@ export const submitInterview = async (req, res) => {
           "suggestions": "...",
           "questions": [
             {
-              "score": 8,
-              "merits": [
-                "Correctly explained ..."
-              ],
-              "demerits": [
-                "The complete missing explanation is ..."
-              ]
+              "score": 7,
+              "merits": ["..."],
+              "demerits": ["..."]
             }
           ]
         }
 
-        STRICT RULES:
-        - No markdown.
-        - No explanations outside JSON.
+        STRICT:
+        - Return only valid JSON.
+        - No markdown or text outside JSON.
         - No extra fields.
-        - merits and demerits must contain ONLY strings.
+        - merits and demerits must contain only strings.
         - Number of question objects MUST exactly match the number of questions.
-        - Keep the original question order.
-        - Never put information in merits that the candidate did not actually demonstrate.
-        - Demerits must contain the actual correct missing content, not just a description of what is missing.
+        - Preserve the original question order.
+        - Never put undemonstrated knowledge in merits.
+        - Demerits must contain the actual complete correct explanation, not merely what the candidate should mention.
+        - merits + demerits must together represent the complete answer to the question.
 
         INTERVIEW:
-
         ${questionsWithAnswers.map((q, i) => `
         Question ${i + 1}: ${q.question}
         Candidate Answer: ${q.candidateAnswer || "[NO ANSWER PROVIDED]"}
@@ -240,6 +249,7 @@ export const submitInterview = async (req, res) => {
     interview.suggestions = feedback.suggestions;
 
     feedback.questions.forEach((item, index) => {
+      interview.questions[index].answer = questionsWithAnswers[index]?.candidateAnswer || "";
       interview.questions[index].score = item.score;
       interview.questions[index].merits = item.merits;
       interview.questions[index].demerits = item.demerits;
@@ -254,10 +264,8 @@ export const submitInterview = async (req, res) => {
   } catch (error) {
     console.log(error);
 
-    return res.status(500).json({
-      msg: "Server Error",
-      error: error.message,
-    });
+    const aiError = getAiErrorResponse(error);
+    return res.status(aiError.status).json(aiError.body);
   }
 };
 
@@ -346,7 +354,10 @@ export const transcribeAnswer = async (req, res) => {
     return res.status(200).json({ text });
   } catch (error) {
     console.error("Transcription error:", error.message);
-    return res.status(500).json({ msg: "Failed to transcribe audio" });
+    return res.status(503).json({
+      msg: "Voice transcription service is unavailable right now. Your answer could not be transcribed clearly.",
+      code: "TRANSCRIPTION_SERVICE_ERROR",
+    });
   } finally {
     // Always clean up the temp file, whether transcription succeeded or not.
     if (filePath) {
