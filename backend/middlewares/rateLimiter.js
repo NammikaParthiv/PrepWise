@@ -17,8 +17,9 @@ const aiRateLimiter = async (req, res, next) => {
     const count = await redisClient.eval(
       `
       local current = redis.call("INCR", KEYS[1])
+      local ttl = redis.call("TTL", KEYS[1])
 
-      if current == 1 then
+      if current == 1 or ttl == -1 then
         redis.call("EXPIRE", KEYS[1], ARGV[1])
       end
 
@@ -26,11 +27,20 @@ const aiRateLimiter = async (req, res, next) => {
       `,
       {
         keys: [key],
-        arguments: [String(24 * 60 * 60)], // 24 hours
+        arguments: [String(24 * 60 * 60)],//24 hrs
       }
     );
 
     const currentCount = Number(count);
+
+    const ttl = await redisClient.ttl(key);
+
+    console.log("AI RATE LIMIT:", {
+      userId,
+      key,
+      currentCount,
+      ttl,
+    });
 
     const remaining = Math.max(5 - currentCount, 0);
 
