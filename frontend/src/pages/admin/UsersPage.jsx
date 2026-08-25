@@ -36,7 +36,7 @@ const UsersPage = () => {
             currentPage: page,
             totalPages: 1,
             totalItems: 0,
-          }
+          },
         );
       } catch (error) {
         console.error("Error:", error);
@@ -49,13 +49,31 @@ const UsersPage = () => {
   }, [page, search]);
 
   const deleteUser = async (id) => {
-    if (window.confirm("Are you sure you want to delete this user?")) {
-      try {
-        await axios.delete(`/api/admin/users/${id}`);
-        setUsers(users.filter((u) => u._id !== id));
-      } catch (error) {
-        console.error("Delete failed:", error);
-      }
+    if (
+      !window.confirm(
+        "Are you sure you want to delete this user and all their data?",
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await axios.delete(`/api/admin/users/${id}`);
+
+      const response = await axios.get("/api/admin/users", {
+        params: {
+          page,
+          limit: LIMIT,
+          search,
+        },
+      });
+
+      setUsers(response.data.users || []);
+      setPagination(response.data.pagination || {});
+    } catch (error) {
+      console.error("Delete failed:", error);
+
+      alert(error.response?.data?.msg || "Failed to delete user.");
     }
   };
 
@@ -90,8 +108,12 @@ const UsersPage = () => {
           </div>
         ) : users.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-xl sm:text-2xl font-bold opacity-50">No users found.</p>
-            <p className="text-sm sm:text-base opacity-40">Try adjusting your search criteria.</p>
+            <p className="text-xl sm:text-2xl font-bold opacity-50">
+              No users found.
+            </p>
+            <p className="text-sm sm:text-base opacity-40">
+              Try adjusting your search criteria.
+            </p>
           </div>
         ) : (
           <div>
@@ -102,7 +124,9 @@ const UsersPage = () => {
                     <th className="px-6 sm:px-8 py-5 sm:py-6">UserName</th>
                     <th className="px-6 sm:px-8 py-5 sm:py-6">Email account</th>
                     <th className="px-6 sm:px-8 py-5 sm:py-6">Joined Date</th>
-                    <th className="px-6 sm:px-8 py-5 sm:py-6 text-right">Remove</th>
+                    <th className="px-6 sm:px-8 py-5 sm:py-6 text-right">
+                      Remove
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-600">
@@ -111,8 +135,12 @@ const UsersPage = () => {
                       key={user._id}
                       className="hover:bg-indigo-50 dark:hover:bg-slate-700 transition-colors text-sm sm:text-base"
                     >
-                      <td className="px-6 sm:px-8 py-5 sm:py-6 font-bold">{user.name}</td>
-                      <td className="px-6 sm:px-8 py-5 sm:py-6 opacity-80 break-all">{user.email}</td>
+                      <td className="px-6 sm:px-8 py-5 sm:py-6 font-bold">
+                        {user.name}
+                      </td>
+                      <td className="px-6 sm:px-8 py-5 sm:py-6 opacity-80 break-all">
+                        {user.email}
+                      </td>
                       <td className="px-6 sm:px-8 py-5 sm:py-6 font-mono opacity-60 whitespace-nowrap">
                         {user.createdAt
                           ? new Date(user.createdAt).toLocaleDateString()
@@ -148,12 +176,7 @@ const UsersPage = () => {
 
 export default UsersPage;
 
-function Pagination({
-  currentPage,
-  totalPages,
-  onPageChange,
-  loading,
-}) {
+function Pagination({ currentPage, totalPages, onPageChange, loading }) {
   return (
     <div className="flex justify-center items-center gap-2 mt-10">
       <button

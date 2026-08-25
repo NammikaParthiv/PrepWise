@@ -25,6 +25,7 @@ const References = () => {
     Frontend: [],
     Backend: [],
     DSA: [],
+    Practise: [],
   });
   const [preview, setPreview] = useState(null);
   const [editingId, setEditingId] = useState(null);
@@ -32,7 +33,7 @@ const References = () => {
   const [uploadingCategory, setUploadingCategory] = useState(null);
   const [previewLoading, setPreviewLoading] = useState(false);
   const fileInputRef = useRef(null);
-  const categories = ["Frontend", "Backend", "DSA"];
+  const categories = ["Frontend", "Backend", "DSA","Practise"];
 
   useEffect(() => {
     const fetchReferences = async () => {

@@ -2,20 +2,35 @@ import User from "../models/user.js";
 import Resume from "../models/resume.js";
 import Interview from "../models/interview.js";
 import Reference from "../models/reference.js";
+import Goal from "../models/goal.js";
 import cloudinary from "../config/cloudinary.js";
 
 export const getReferences = async (req, res) => {
   try {
     const refs = await Reference.find().sort({ order: 1 });
-    const grouped = { Frontend: [], Backend: [], DSA: [] };
+    const grouped = { Frontend: [], Backend: [], DSA: [], Practise: [] };
 
+    // refs.forEach((ref) => {
+    //   if (grouped[ref.category]) {
+    //     grouped[ref.category].push(ref);
+    //   }
+    // });
     refs.forEach((ref) => {
-      grouped[ref.category].push(ref);
+      if (grouped[ref.category]) {
+        grouped[ref.category].push(ref);
+      } else {
+        console.error(
+          "Unknown reference category:",
+          ref.category,
+          "Reference ID:",
+          ref._id
+        );
+      }
     });
 
     return res.json(grouped);
   } catch (error) {
-    console.log(error);
+    console.error("Get references error:", error);
     return res.status(500).json({ msg: "Server error" });
   }
 };
@@ -36,15 +51,15 @@ export const addReferences = async (req, res) => {
           timeout: 180000,
         },
         (error, result) => {
-  if (error) {
-    if (error) {
-  console.error("CLOUDINARY ERROR MESSAGE:", error);
-  reject(error);
-}
-  } else {
-    resolve(result);
-  }
-}
+          if (error) {
+            if (error) {
+              console.error("CLOUDINARY ERROR MESSAGE:", error);
+              reject(error);
+            }
+          } else {
+            resolve(result);
+          }
+        }
       );
 
       stream.end(file.buffer);
@@ -62,7 +77,7 @@ export const addReferences = async (req, res) => {
     await newRef.save();
 
     const refs = await Reference.find();
-    const grouped = { Frontend: [], Backend: [], DSA: [] };
+    const grouped = { Frontend: [], Backend: [], DSA: [], Practise: [] };
 
     refs.forEach((ref) => grouped[ref.category].push(ref));
 
@@ -97,7 +112,7 @@ export const addReferences = async (req, res) => {
 //     await newRef.save();
 
 //     const refs = await Reference.find();
-//     const grouped = { Frontend: [], Backend: [], DSA: [] };
+//     const grouped = { Frontend: [], Backend: [], DSA: [],Practise:[] };
 //     refs.forEach(ref => grouped[ref.category].push(ref));
 //     return res.json(grouped);
 //   } catch (error) {
@@ -122,6 +137,8 @@ export const getStats = async (req, res) => {
     return res.status(500).json({ msg: "Server error" });
   }
 };
+
+//before Pagination
 
 // export const getUsers = async (req, res) => {
 //   try {
@@ -192,6 +209,59 @@ export const getUsers = async (req, res) => {
   }
 };
 
+export const deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const user = await User.findOne({
+      _id: id,
+      role: "user",
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        msg: "User not found",
+      });
+    }
+
+    // Delete user's profile photo from Cloudinary
+    if (user.profilePic_public_id) {
+      try {
+        await cloudinary.uploader.destroy(
+          user.profilePic_public_id,
+          {
+            resource_type: "image",
+          }
+        );
+      } catch (cloudinaryError) {
+        console.error(
+          "Cloudinary profile photo deletion failed:",
+          cloudinaryError
+        );
+      }
+    }
+
+    await Promise.all([
+      Resume.deleteMany({ user: id }),
+      Interview.deleteMany({ user: id }),
+      Goal.deleteMany({ user: id }),
+    ]);
+
+    await User.findByIdAndDelete(id);
+
+    return res.status(200).json({
+      msg: "User and all associated data deleted successfully",
+    });
+  } catch (error) {
+    console.error("Delete user error:", error);
+
+    return res.status(500).json({
+      msg: "Server Error",
+      error: error.message,
+    });
+  }
+};
+
 export const deleteReference = async (req, res) => {
   try {
     const { id } = req.params;
@@ -224,6 +294,7 @@ export const deleteReference = async (req, res) => {
       Frontend: [],
       Backend: [],
       DSA: [],
+      Practise: [],
     };
 
     refs.forEach((ref) => {
@@ -251,7 +322,7 @@ export const updateReference = async (req, res) => {
     await Reference.findByIdAndUpdate(id, { name }, { returnDocument: 'after' });
 
     const refs = await Reference.find();
-    const grouped = { Frontend: [], Backend: [], DSA: [] };
+    const grouped = { Frontend: [], Backend: [], DSA: [], Practise: [] };
     refs.forEach((ref) => {
       if (grouped[ref.category]) {
         grouped[ref.category].push(ref);
@@ -283,7 +354,7 @@ export const reorderReferences = async (req, res) => {
       await Reference.bulkWrite(bulkOperations);
     }
     const refs = await Reference.find().sort({ order: 1 });
-    const grouped = { Frontend: [], Backend: [], DSA: [] };
+    const grouped = { Frontend: [], Backend: [], DSA: [], Practise: [] };
     refs.forEach((ref) => {
       if (grouped[ref.category]) {
         grouped[ref.category].push(ref);
