@@ -37,6 +37,10 @@ const UserSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    profilePic_public_id: {
+      type: String,
+      default: "",
+    },
     resetOTP: {
       type: String,
       default: null,

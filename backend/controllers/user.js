@@ -1,11 +1,10 @@
 import User from "../models/user.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import fs from "fs";
-import path from "path";
 import Interview from "../models/interview.js";
 import Resume from "../models/resume.js";
 import nodemailer from "nodemailer";
+import cloudinary from "../config/cloudinary.js";
 
 let cachedTransporter = null;
 let cachedMailUser = process.env.EMAIL_USER;
@@ -204,15 +203,35 @@ export const updateProfile = async (req, res) => {
     }
 
     if (req.file) {
-      if (user.profilePic_URL) {
-        const oldFilePath = path.join(process.cwd(), user.profilePic_URL.replace(/^\/+/, ""));
-        if (fs.existsSync(oldFilePath)) {
-          fs.unlinkSync(oldFilePath);
-        }
+  // Delete old Cloudinary profile photo
+  if (user.profilePic_public_id) {
+    await cloudinary.uploader.destroy(
+      user.profilePic_public_id,
+      {
+        resource_type: "image",
       }
+    );
+  }
 
-      user.profilePic_URL = `/uploads/${req.file.filename}`;
-    }
+  // Upload new profile photo
+  const result = await new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        folder: "prepwise/profile",
+        resource_type: "image",
+      },
+      (error, result) => {
+        if (error) reject(error);
+        else resolve(result);
+      }
+    );
+
+    stream.end(req.file.buffer);
+  });
+
+  user.profilePic_URL = result.secure_url;
+  user.profilePic_public_id = result.public_id;
+}
 
     await user.save();
 
@@ -234,24 +253,30 @@ export const deleteProfilePhoto = async (req, res) => {
       return res.status(404).json({ msg: "User not found" });
     }
 
-    if (user.profilePic_URL) {
-      const filePath = path.join(process.cwd(), user.profilePic_URL.replace(/^\/+/, ""));
-
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-      }
-
-      user.profilePic_URL = "";
-      await user.save();
+    if (user.profilePic_public_id) {
+      await cloudinary.uploader.destroy(
+        user.profilePic_public_id,
+        {
+          resource_type: "image",
+        }
+      );
     }
+
+    user.profilePic_URL = "";
+    user.profilePic_public_id = "";
+
+    await user.save();
 
     return res.status(200).json({
       msg: "Profile photo removed successfully",
       user,
     });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ msg: "Server Error" });
+    console.error("Delete profile photo error:", error);
+
+    return res.status(500).json({
+      msg: "Server Error",
+    });
   }
 };
 

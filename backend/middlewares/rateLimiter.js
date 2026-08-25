@@ -35,12 +35,12 @@ const aiRateLimiter = async (req, res, next) => {
 
     const ttl = await redisClient.ttl(key);
 
-    console.log("AI RATE LIMIT:", {
-      userId,
-      key,
-      currentCount,
-      ttl,
-    });
+    // console.log("AI RATE LIMIT:", {
+    //   userId,
+    //   key,
+    //   currentCount,
+    //   ttl,
+    // });
 
     const remaining = Math.max(5 - currentCount, 0);
 

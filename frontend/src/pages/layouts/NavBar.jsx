@@ -30,7 +30,7 @@ function NavBar() {
         )}
 
         <button
-          onClick={() => setDarkMode(prev => !prev)}
+          onClick={() => setDarkMode((prev) => !prev)}
           className={`p-2 md:px-5 md:py-3 rounded-xl font-semibold transition-all duration-300 cursor-pointer ${
             darkMode ? "bg-white text-black" : "bg-slate-900 text-white"
           }`}
@@ -39,18 +39,27 @@ function NavBar() {
         </button>
       </div>
 
-      <div className="absolute left-1/2 -translate-x-1/2 flex items-center cursor-pointer" onClick={() => navigate(user.role==="user"?"/u":"/admin", { replace: true })}>
+      <div
+        className="absolute left-1/2 -translate-x-1/2 flex items-center cursor-pointer"
+        onClick={() =>
+          navigate(user.role === "user" ? "/u" : "/admin", { replace: true })
+        }
+      >
         <h1 className="text-2xl md:text-5xl font-handwritting">prepWise</h1>
-        <img src="/logo.png" alt="Logo" className="hidden md:block p-2 rounded-full h-15" />
+        <img
+          src="/logo.png"
+          alt="Logo"
+          className="hidden md:block p-2 rounded-full h-15"
+        />
       </div>
 
       <div className="flex items-center">
         <h2 className="hidden md:block font-bold text-lg mr-4">
           <span className="text-blue-200">{user?.name || "User"}</span>
         </h2>
-        
+
         <img
-          src={user?.profilePic_URL ? `http://localhost:2222${user.profilePic_URL}` : "/user.png"}
+          src={user?.profilePic_URL || "/user.png"}
           alt="Profile"
           className="h-10 w-10 md:h-12 md:w-12 rounded-full object-cover cursor-pointer border-2 border-white"
           onClick={() => setOpen(!open)}
@@ -58,13 +67,19 @@ function NavBar() {
 
         {open && (
           <div className="absolute top-16 right-4 w-40 bg-white text-black rounded-lg shadow-xl overflow-hidden animate-in fade-in zoom-in duration-200">
-            <button className="block w-full text-left px-4 py-3 hover:bg-gray-100" onClick={() => {setOpen(false); navigate("/u/profile", { replace: path === "/u/profile" })}}>
+            <button
+              className="block w-full text-left px-4 py-3 hover:bg-gray-100"
+              onClick={() => {
+                setOpen(false);
+                navigate("/u/profile", { replace: path === "/u/profile" });
+              }}
+            >
               Profile 👤
             </button>
-            <button 
-              className="block w-full text-left px-4 py-3 hover:bg-gray-100 text-red-600" 
+            <button
+              className="block w-full text-left px-4 py-3 hover:bg-gray-100 text-red-600"
               onClick={() => {
-                if(window.confirm("Are you sure you want to logout?")) {
+                if (window.confirm("Are you sure you want to logout?")) {
                   localStorage.removeItem("token");
                   localStorage.removeItem("user");
                   setUser(null);

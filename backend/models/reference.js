@@ -9,6 +9,9 @@ const referenceSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  cloudinary_public_id: {
+    type: String,
+  },
   type: {
     type: String,
     enum: ["pdf", "photo"],
@@ -26,7 +29,8 @@ const referenceSchema = new mongoose.Schema({
   order:{
     type: Number,
     default: 0,
-  }
+  },
+
 },{timestamps: true});
 
 export default mongoose.model("Reference", referenceSchema);

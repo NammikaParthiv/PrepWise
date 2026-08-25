@@ -12,6 +12,8 @@ import {
   FaEdit,
   FaCheck,
   FaGripVertical,
+  FaSpinner,
+  FaExpand,
 } from "react-icons/fa";
 
 const References = () => {
@@ -27,6 +29,8 @@ const References = () => {
   const [preview, setPreview] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [newName, setNewName] = useState("");
+  const [uploadingCategory, setUploadingCategory] = useState(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
   const fileInputRef = useRef(null);
   const categories = ["Frontend", "Backend", "DSA"];
 
@@ -49,11 +53,22 @@ const References = () => {
     formData.append("file", file);
     formData.append("category", activeCategory);
 
+    setUploadingCategory(activeCategory);
+
     try {
-      const res = await axios.post("/api/references/add_reference", formData);
+      const res = await axios.post("/api/references/add_reference", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       setMaterials(res.data);
     } catch (error) {
       console.error("Error uploading file:", error);
+    } finally {
+      setUploadingCategory(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
 
@@ -127,9 +142,12 @@ const References = () => {
   const renderCardContent = (file, dragHandleProps = null) => (
     <div
       onClick={() => {
-        if (editingId !== file._id) setPreview(file);
+        if (editingId !== file._id) {
+          setPreviewLoading(true);
+          setPreview(file);
+        }
       }}
-      className="group relative bg-white dark:bg-slate-900/90 backdrop-blur-md p-5 sm:p-7 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800 hover:border-indigo-500 dark:hover:border-indigo-400 transition-all duration-300 shadow-xs hover:shadow-xl cursor-pointer flex flex-col justify-between min-h-47 sm:min-h-55 h-full"
+      className="group relative bg-white dark:bg-slate-900/95 backdrop-blur-md p-5 sm:p-7 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800 hover:border-indigo-500 dark:hover:border-indigo-400 transition-all duration-300 shadow-xs hover:shadow-xl cursor-pointer flex flex-col justify-between min-h-47 sm:min-h-55 h-full"
     >
       <div>
         <div className="flex justify-between items-start mb-4 sm:mb-6">
@@ -236,7 +254,8 @@ const References = () => {
               <button
                 type="button"
                 onClick={() => fileInputRef.current.click()}
-                className="w-full md:w-auto flex items-center justify-center gap-2.5 px-6 py-3.5 bg-linear-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-bold rounded-xl sm:rounded-2xl transition-all shadow-md hover:shadow-indigo-500/25 active:scale-95 text-sm sm:text-base cursor-pointer"
+                disabled={uploadingCategory !== null}
+                className="w-full md:w-auto flex items-center justify-center gap-2.5 px-6 py-3.5 bg-linear-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-bold rounded-xl sm:rounded-2xl transition-all shadow-md hover:shadow-indigo-500/25 active:scale-95 text-sm sm:text-base cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <FaPlus className="text-xs sm:text-sm" />{" "}
                 <span>Add New Resource</span>
@@ -270,7 +289,7 @@ const References = () => {
           ))}
         </nav>
 
-        {activeItems.length > 0 ? (
+        {activeItems.length > 0 || uploadingCategory === activeCategory ? (
           isAdmin ? (
             <DragDropContext onDragEnd={handleOnDragEnd}>
               <Droppable droppableId="references-grid">
@@ -280,6 +299,17 @@ const References = () => {
                     ref={provided.innerRef}
                     className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
                   >
+                    {uploadingCategory === activeCategory && (
+                      <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-6 rounded-2xl sm:rounded-3xl border-2 border-dashed border-indigo-500 flex flex-col items-center justify-center min-h-47 sm:min-h-55 h-full animate-pulse shadow-lg">
+                        <FaSpinner className="text-3xl text-indigo-600 dark:text-indigo-400 animate-spin mb-3" />
+                        <p className="text-sm font-bold text-slate-800 dark:text-slate-200 text-center">
+                          Uploading to Cloudinary...
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                          Please wait while processing
+                        </p>
+                      </div>
+                    )}
                     {activeItems.map((file, index) => (
                       <Draggable
                         key={file._id}
@@ -304,6 +334,17 @@ const References = () => {
             </DragDropContext>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              {uploadingCategory === activeCategory && (
+                <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-6 rounded-2xl sm:rounded-3xl border-2 border-dashed border-indigo-500 flex flex-col items-center justify-center min-h-47 sm:min-h-55 h-full animate-pulse shadow-lg">
+                  <FaSpinner className="text-3xl text-indigo-600 dark:text-indigo-400 animate-spin mb-3" />
+                  <p className="text-sm font-bold text-slate-800 dark:text-slate-200 text-center">
+                    Uploading to Cloudinary...
+                  </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    Please wait while processing
+                  </p>
+                </div>
+              )}
               {activeItems.map((file) => (
                 <div key={file._id}>{renderCardContent(file)}</div>
               ))}
@@ -323,32 +364,61 @@ const References = () => {
       </main>
 
       {preview && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex flex-col items-center justify-center p-2 sm:p-6">
-          <div className="w-full max-w-5xl flex justify-between items-center mb-3 px-2 text-white">
-            <h3 className="text-sm sm:text-lg font-bold truncate pr-4">
-              {preview.name || "Resource Preview"}
-            </h3>
+        <div className="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex flex-col items-center justify-center p-1 sm:p-2">
+          {/* Top Absolute Action Bar with High Z-Index */}
+          <div className="absolute top-3 right-3 sm:top-4 sm:right-6 z-60 flex items-center gap-2">
+            <a
+              href={getFileUrl(preview)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2.5 sm:p-3 bg-slate-800/90 hover:bg-indigo-600 text-white rounded-full transition-all border border-slate-700 shadow-2xl cursor-pointer flex items-center justify-center"
+              title="Open Full Screen in New Tab"
+            >
+              <FaExpand className="text-base sm:text-lg" />
+            </a>
             <button
               type="button"
-              onClick={() => setPreview(null)}
-              className="p-2 sm:p-2.5 bg-slate-800/80 hover:bg-rose-600 text-white rounded-xl transition-all border border-slate-700 cursor-pointer shrink-0"
+              onClick={() => {
+                setPreview(null);
+                setPreviewLoading(false);
+              }}
+              className="p-2.5 sm:p-3 bg-slate-800/90 hover:bg-rose-600 text-white rounded-full transition-all border border-slate-700 shadow-2xl cursor-pointer flex items-center justify-center"
               title="Close Preview"
             >
-              <FaTimes className="text-base sm:text-xl" />
+              <FaTimes className="text-lg sm:text-xl" />
             </button>
           </div>
 
-          <div className="w-full h-[82vh] sm:h-[85vh] max-w-5xl bg-slate-900 rounded-2xl overflow-hidden border border-slate-800 shadow-2xl flex items-center justify-center relative">
+          {/* Title Header overlay */}
+          <div className="absolute top-4 left-6 z-60 max-w-[50%] hidden sm:block">
+            <h3 className="text-sm sm:text-base font-bold text-white truncate bg-slate-900/80 px-4 py-2 rounded-full border border-slate-800 shadow-lg">
+              {preview.name || "Resource Preview"}
+            </h3>
+          </div>
+
+          {/* True Full Screen Display Container */}
+          <div className="w-full h-full max-w-full max-h-full bg-slate-900 rounded-none sm:rounded-2xl overflow-hidden border-0 sm:border border-slate-800 shadow-2xl flex items-center justify-center relative">
+            {previewLoading && (
+              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-slate-900/90 backdrop-blur-xs">
+                <FaSpinner className="text-4xl text-indigo-500 animate-spin mb-3" />
+                <p className="text-sm font-bold text-slate-200">
+                  Loading preview...
+                </p>
+              </div>
+            )}
+
             {preview.type === "pdf" ? (
               <iframe
                 src={getFileUrl(preview)}
+                onLoad={() => setPreviewLoading(false)}
                 className="w-full h-full border-none bg-white"
                 title={preview.name || "Reference File"}
               />
             ) : (
               <img
                 src={getFileUrl(preview)}
-                className="max-w-full max-h-full object-contain p-2"
+                onLoad={() => setPreviewLoading(false)}
+                className="w-full h-full object-contain p-2 sm:p-4"
                 alt={preview.name || "Reference File"}
               />
             )}
