@@ -6,9 +6,6 @@ const ResumeSchema = new mongoose.Schema({
         ref:"User",
         required: true,
     },
-    job_role:{
-        type:String,
-    },
     resume_name:{
         type: String,
         required: true,

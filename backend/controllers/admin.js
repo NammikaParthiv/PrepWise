@@ -48,14 +48,12 @@ export const addReferences = async (req, res) => {
         {
           folder: "prepwise/references",
           resource_type: "image",
-          timeout: 180000,
+          timeout: 180000,//3min
         },
         (error, result) => {
           if (error) {
-            if (error) {
               console.error("CLOUDINARY ERROR MESSAGE:", error);
               reject(error);
-            }
           } else {
             resolve(result);
           }
@@ -290,6 +288,36 @@ export const deleteReference = async (req, res) => {
 
     const refs = await Reference.find().sort({ order: 1 });
 
+    const categories = [
+      "Frontend",
+      "Backend",
+      "DSA",
+      "Practise",
+    ];
+
+    const bulkOperations = [];
+
+    for (const category of categories) {
+      const categoryRefs = refs.filter(
+        (ref) => ref.category === category
+      );
+
+      categoryRefs.forEach((ref, index) => {
+        bulkOperations.push({
+          updateOne: {
+            filter: { _id: ref._id },
+            update: { $set: { order: index } },
+          },
+        });
+      });
+    }
+
+    if (bulkOperations.length > 0) {
+      await Reference.bulkWrite(bulkOperations);
+    }
+
+    const updatedRefs = await Reference.find().sort({ order: 1 });
+
     const grouped = {
       Frontend: [],
       Backend: [],
@@ -297,7 +325,7 @@ export const deleteReference = async (req, res) => {
       Practise: [],
     };
 
-    refs.forEach((ref) => {
+    updatedRefs.forEach((ref) => {
       if (grouped[ref.category]) {
         grouped[ref.category].push(ref);
       }

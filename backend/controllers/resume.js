@@ -5,15 +5,12 @@ import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const pdfParse = require("pdf-parse");
 
-import fs from "fs";
-import path from "path";
 import { getAiErrorResponse } from "../utils/aiErrorResponse.js";
 
 export const addResume = async (req, res) => {
   try {
     const { job_description } = req.body;
-    const pdfPath = req.file.path;
-    const dataBuffer = fs.readFileSync(pdfPath);
+    const dataBuffer = req.file.buffer;
 
     const pdfData = await pdfParse(dataBuffer);
         const prompt = `
@@ -122,7 +119,7 @@ export const addResume = async (req, res) => {
     });
     await newResume.save();
 
-    fs.unlinkSync(pdfPath); //removes the temp file
+    // fs.unlinkSync(pdfPath); removes the temp file
 
     res.status(200).json({ msg: "Your Analysis are Ready", data: newResume });
   } catch (error) {

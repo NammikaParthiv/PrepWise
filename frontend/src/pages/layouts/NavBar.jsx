@@ -67,15 +67,18 @@ function NavBar() {
 
         {open && (
           <div className="absolute top-16 right-4 w-40 bg-white text-black rounded-lg shadow-xl overflow-hidden animate-in fade-in zoom-in duration-200">
-            <button
-              className="block w-full text-left px-4 py-3 hover:bg-gray-100"
-              onClick={() => {
-                setOpen(false);
-                navigate("/u/profile", { replace: path === "/u/profile" });
-              }}
-            >
-              Profile 👤
-            </button>
+            {user?.role === "user" && (
+              <button
+                className="block w-full text-left px-4 py-3 hover:bg-gray-100"
+                onClick={() => {
+                  setOpen(false);
+                  navigate("/u/profile", { replace: path === "/u/profile" });
+                }}
+              >
+                Profile 👤
+              </button>
+            )}
+
             <button
               className="block w-full text-left px-4 py-3 hover:bg-gray-100 text-red-600"
               onClick={() => {
