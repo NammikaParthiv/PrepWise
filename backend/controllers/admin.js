@@ -8,7 +8,7 @@ import cloudinary from "../config/cloudinary.js";
 export const getReferences = async (req, res) => {
   try {
     const refs = await Reference.find().sort({ order: 1 });
-    const grouped = { Frontend: [], Backend: [], DSA: [], Practise: [] };
+    const grouped = { Frontend: [], Backend: [], DSA: [], Practise: [], CS_core:[] };
 
     // refs.forEach((ref) => {
     //   if (grouped[ref.category]) {
@@ -75,7 +75,7 @@ export const addReferences = async (req, res) => {
     await newRef.save();
 
     const refs = await Reference.find();
-    const grouped = { Frontend: [], Backend: [], DSA: [], Practise: [] };
+    const grouped = { Frontend: [], Backend: [], DSA: [], Practise: [], CS_core:[] };
 
     refs.forEach((ref) => grouped[ref.category].push(ref));
 
@@ -293,6 +293,7 @@ export const deleteReference = async (req, res) => {
       "Backend",
       "DSA",
       "Practise",
+      "CS_core"
     ];
 
     const bulkOperations = [];
@@ -323,6 +324,7 @@ export const deleteReference = async (req, res) => {
       Backend: [],
       DSA: [],
       Practise: [],
+      CS_core: [],
     };
 
     updatedRefs.forEach((ref) => {
@@ -350,7 +352,7 @@ export const updateReference = async (req, res) => {
     await Reference.findByIdAndUpdate(id, { name }, { returnDocument: 'after' });
 
     const refs = await Reference.find();
-    const grouped = { Frontend: [], Backend: [], DSA: [], Practise: [] };
+    const grouped = { Frontend: [], Backend: [], DSA: [], Practise: [], CS_core: [] };
     refs.forEach((ref) => {
       if (grouped[ref.category]) {
         grouped[ref.category].push(ref);
@@ -382,7 +384,7 @@ export const reorderReferences = async (req, res) => {
       await Reference.bulkWrite(bulkOperations);
     }
     const refs = await Reference.find().sort({ order: 1 });
-    const grouped = { Frontend: [], Backend: [], DSA: [], Practise: [] };
+    const grouped = { Frontend: [], Backend: [], DSA: [], Practise: [], CS_core: [] };
     refs.forEach((ref) => {
       if (grouped[ref.category]) {
         grouped[ref.category].push(ref);

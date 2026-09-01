@@ -23,7 +23,7 @@ const referenceSchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    enum: ["Frontend", "Backend", "DSA","Practise"],
+    enum: ["Frontend", "Backend", "DSA","Practise","CS_core"],
     required: true,
   },
   order:{
