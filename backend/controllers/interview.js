@@ -47,7 +47,9 @@ export const generateInterview = async (req, res) => {
       });
 
       return res.status(201).json({
-        msg:"Interview generated successfully",interview,
+        msg:"Interview generated successfully",
+        interview,
+        questions:questions,
       });
     }
       //console.log("4. Not Found in Cache");
@@ -77,6 +79,7 @@ export const generateInterview = async (req, res) => {
     return res.status(202).json({
       msg:"Interview is being generated",
       interviewId : interview._id,
+      questions:questions || [],
     });
   // try {
   //   const prompt = `Generate 1 real-time company interview questions for graduating students from b.tech for the job-role:${job_role}.

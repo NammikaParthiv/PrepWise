@@ -9,5 +9,6 @@ redisClient.on("connect", () => {
 redisClient.on("error", (err) => {
     console.log("Redis connection Failed",err);
 })
+await redisClient.connect();
 
 export default redisClient;
